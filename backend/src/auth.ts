@@ -166,7 +166,7 @@ export const signupRoute = (req: IncomingMessage, res: ServerResponse) => {
     }
     const username = credentials.username;
     const password = await bcrypt.hash(credentials.password, 10);
-    const user = new Users({ id: uuidv4(), username, password, permission: "U" });
+    const user = new Users({ userId: uuidv4(), username, password, permission: "U" });
 
     try { await user.save(); } catch (err) {
       res.statusCode = 400;

@@ -1,23 +1,16 @@
 import * as mongoose from "mongoose";
-
-// Everything in Mongoose starts with a Schema.
-// Each schema maps to a MongoDB collection and defines the shape of the documents within that collection.
-
-const cartSchema = new mongoose.Schema({
-    count: { type: Number, required: true },
-    productId: { type: String, required: true }
-});
+import cartItemSchema from "./cartItemSchema.js";
 
 // Creating new Schema object
 // Each propery have type filed - https://mongoosejs.com/docs/schematypes.html
 // And requierd files if needed
 const userSchema = new mongoose.Schema(
     {
-        id: { type: String, required: true },
+        userId: { type: String, required: true },
         username: { type: String, required: true },
         password: { type: String, required: true },
         permission: { type: String, required: true },
-        cart: {type: [cartSchema],required: true}
+        cart: {type: [cartItemSchema],required: true}
     }, { collection: 'UserAuthData' }
 
 );
