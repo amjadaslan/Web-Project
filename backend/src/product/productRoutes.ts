@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { IncomingMessage, ServerResponse } from "http";
 import Product from "../models/productSchema.js";
 import { protectedRout } from "../auth.js";
-import Users from "../models/userSchema.js";
+import {User} from "../models/userSchema.js";
 import { ERROR_401 } from "../const.js";
 import { v4 as uuidv4 } from "uuid";
 
@@ -11,7 +11,7 @@ const validCategories = ["t-shirt", "hoodie", "hat", "necklace", "bracelet", "sh
 export const getProduct = async (req: IncomingMessage, res: ServerResponse, idOrType: string) => {
     const userId = protectedRout(req, res);
     if (userId !== ERROR_401) {
-        const user = await Users.findOne(userId);
+        const user = await User.findOne(userId);
         if (user) {
             //We try to interpret input as Id. If that fails, we interpret as category
             const product = await Product.findOne({ id: idOrType }).select('-__v -_id');
@@ -50,7 +50,7 @@ export const getProduct = async (req: IncomingMessage, res: ServerResponse, idOr
 export const createProduct = async (req: IncomingMessage, res: ServerResponse) => {
     const userId = protectedRout(req, res);
     if (userId !== ERROR_401) {
-        const user = await Users.findOne(userId);
+        const user = await User.findOne(userId);
         if (user) {
             if (["A", "M"].includes(user.permission)) {
                 // Read request body.
@@ -123,7 +123,7 @@ export const createProduct = async (req: IncomingMessage, res: ServerResponse) =
 export const updateProduct = async (req: IncomingMessage, res: ServerResponse, id: string) => {
     const userId = protectedRout(req, res);
     if (userId !== ERROR_401) {
-        const user = await Users.findOne(userId);
+        const user = await User.findOne(userId);
         if (user) {
             if (["A", "M"].includes(user.permission)) {
                 const prod = await Product.findOne({ id: id });
@@ -201,7 +201,7 @@ export const updateProduct = async (req: IncomingMessage, res: ServerResponse, i
 export const removeProduct = async (req: IncomingMessage, res: ServerResponse, id: string) => {
     const userId = protectedRout(req, res);
     if (userId !== ERROR_401) {
-        const user = await Users.findOne(userId);
+        const user = await User.findOne(userId);
         if (user) {
             if (user.permission == "A") {
                 const prod = await Product.findOne({ id: id });

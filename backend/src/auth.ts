@@ -2,7 +2,7 @@ import { IncomingMessage, ServerResponse } from "http";
 import jwt from "jsonwebtoken";
 import * as bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
-import Users from "./models/userSchema.js";
+import {User} from "./models/userSchema.js";
 
 import { ERROR_401 } from "./const.js";
 import { stringify } from "querystring";
@@ -86,7 +86,7 @@ export const loginRoute = (req: IncomingMessage, res: ServerResponse) => {
     }
 
     // Check if username and password match
-    const user = await Users.findOne({ username: credentials.username });
+    const user = await User.findOne({ username: credentials.username });
     if (!user) {
       res.statusCode = 401;
       res.end(
@@ -154,7 +154,7 @@ export const signupRoute = (req: IncomingMessage, res: ServerResponse) => {
       );
       return;
     }
-    const alreadyCreated = await Users.findOne({ username: credentials.username });
+    const alreadyCreated = await User.findOne({ username: credentials.username });
     if (alreadyCreated) {
       res.statusCode = 400;
       res.end(
@@ -166,7 +166,7 @@ export const signupRoute = (req: IncomingMessage, res: ServerResponse) => {
     }
     const username = credentials.username;
     const password = await bcrypt.hash(credentials.password, 10);
-    const user = new Users({ userId: uuidv4(), username, password, permission: "U" });
+    const user = new User({ userId: uuidv4(), username, password, permission: "U" });
 
     try { await user.save(); } catch (err) {
       res.statusCode = 400;
@@ -186,7 +186,7 @@ export const signupRoute = (req: IncomingMessage, res: ServerResponse) => {
 export const changePermission = async (req: IncomingMessage, res: ServerResponse) => {
   const userID = protectedRout(req, res);
   if (userID) {
-    const user = await Users.findOne(userID);
+    const user = await User.findOne(userID);
     if (user) {
       if (user.permission == "A") {
         // Read request body.
@@ -209,7 +209,7 @@ export const changePermission = async (req: IncomingMessage, res: ServerResponse
             res.end(JSON.stringify({ message: "Missing permission or username" }));
             return;
           }
-          const userToUpdate = await Users.findOne({ username: credentials.username });
+          const userToUpdate = await User.findOne({ username: credentials.username });
           if (!userToUpdate) {
             res.statusCode = 401;
             res.end(

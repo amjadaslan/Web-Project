@@ -2,14 +2,14 @@ import { randomUUID } from "crypto";
 import { IncomingMessage, ServerResponse } from "http";
 import Product from "../models/productSchema.js";
 import { protectedRout } from "../auth.js";
-import Users from "../models/userSchema.js";
+import {User} from "../models/userSchema.js";
 import { ERROR_401 } from "../const.js";
 import { v4 as uuidv4 } from "uuid";
 
 export const updateCart = async (req: IncomingMessage, res: ServerResponse) => {
     const userId = protectedRout(req, res);
     if (userId !== ERROR_401) {
-        const user = await Users.findOne(userId);
+        const user = await User.findOne(userId);
         if (user) {
             if (user.permission === "U" ) {
                 // Read request body.
