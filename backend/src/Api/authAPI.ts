@@ -2,13 +2,15 @@ import { IncomingMessage, ServerResponse } from "http";
 import jwt from "jsonwebtoken";
 import * as bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
-import {User} from "./models/userSchema.js";
+import { User } from "../models/userSchema.js";
 
-import { ERROR_401 } from "./const.js";
+import { ERROR_401 } from "../const.js";
 import { stringify } from "querystring";
+import UserService from "../Services/userService.js";
 
 // TODO: You need to config SERCRET_KEY in render.com dashboard, under Environment section.
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
+const userService = new UserService();
 
 // Verify JWT token
 const verifyJWT = (token: string) => {
@@ -57,6 +59,16 @@ export const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
   return user;
 };
 
+export default (app) => {
+  app.post('/api/signup', function (req, res) { signupRoute(req, res); });
+
+  app.post('/api/login', function (req, res) { loginRoute(req, res); });
+
+  app.put('/api/permission', function (req, res) { changePermission(req, res); });
+
+}
+
+
 export const loginRoute = (req: IncomingMessage, res: ServerResponse) => {
   // Read request body.
   let body = "";
@@ -86,7 +98,7 @@ export const loginRoute = (req: IncomingMessage, res: ServerResponse) => {
     }
 
     // Check if username and password match
-    const user = await User.findOne({ username: credentials.username });
+    const user = await userService.getUserByUsername(credentials.username);
     if (!user) {
       res.statusCode = 401;
       res.end(
@@ -116,7 +128,7 @@ export const loginRoute = (req: IncomingMessage, res: ServerResponse) => {
 
     // Create JWT token.
     // This token contain the userId in the data section.
-    const token = jwt.sign({ id: user.id }, secretKey, {
+    const token = jwt.sign({ userId: user.id }, secretKey, {
       expiresIn: 86400, // expires in 24 hours
     });
 
@@ -154,7 +166,7 @@ export const signupRoute = (req: IncomingMessage, res: ServerResponse) => {
       );
       return;
     }
-    const alreadyCreated = await User.findOne({ username: credentials.username });
+    const alreadyCreated = await userService.getUserByUsername(credentials.username);
     if (alreadyCreated) {
       res.statusCode = 400;
       res.end(
@@ -166,9 +178,10 @@ export const signupRoute = (req: IncomingMessage, res: ServerResponse) => {
     }
     const username = credentials.username;
     const password = await bcrypt.hash(credentials.password, 10);
-    const user = new User({ userId: uuidv4(), username, password, permission: "U" });
 
-    try { await user.save(); } catch (err) {
+    try {
+      await userService.createUser({ username, password, permission: "U" });
+    } catch (err) {
       res.statusCode = 400;
       res.end();
       return;
@@ -186,7 +199,7 @@ export const signupRoute = (req: IncomingMessage, res: ServerResponse) => {
 export const changePermission = async (req: IncomingMessage, res: ServerResponse) => {
   const userID = protectedRout(req, res);
   if (userID) {
-    const user = await User.findOne(userID);
+    const user = await userService.getUser(userID.userId);
     if (user) {
       if (user.permission == "A") {
         // Read request body.
@@ -209,7 +222,7 @@ export const changePermission = async (req: IncomingMessage, res: ServerResponse
             res.end(JSON.stringify({ message: "Missing permission or username" }));
             return;
           }
-          const userToUpdate = await User.findOne({ username: credentials.username });
+          const userToUpdate = await userService.getUserByUsername(credentials.username);
           if (!userToUpdate) {
             res.statusCode = 401;
             res.end(
@@ -219,11 +232,9 @@ export const changePermission = async (req: IncomingMessage, res: ServerResponse
             );
             return;
           }
-          userToUpdate.permission = credentials.permission;
-          await userToUpdate.save();
+          await userService.changeUserPermission(credentials.username, credentials.permission);
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end();
-          // await Users.updateOne({username: credentials.username}, { $set: {permission: credentials.permission} }).exec();
         });
         return;
       }

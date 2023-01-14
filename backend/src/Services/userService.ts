@@ -3,14 +3,19 @@ import { v4 as uuidv4 } from "uuid";
 
 class UserService {
 
-    async getUser(userName: string) {
+    async getUser(userId: string) {
+        const user = await User.findOne({ userId: userId });
+        return user;
+    }
+
+    async getUserByUsername(userName: string){
         const user = await User.findOne({ username: userName });
         return user;
     }
 
-    async createUser({ userId, username, password, permission }) {
+    async createUser({ username, password, permission }) {
         
-        const user = new User({ userId, username,password, permission,cart:[] });
+        const user = new User({ userId: uuidv4(), username,password, permission,cart:[] });
         await user.save();
     }
 

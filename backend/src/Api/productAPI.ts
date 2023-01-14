@@ -1,22 +1,38 @@
 import { randomUUID } from "crypto";
 import { IncomingMessage, ServerResponse } from "http";
-import Product from "../models/productSchema.js";
-import { protectedRout } from "../auth.js";
-import {User} from "../models/userSchema.js";
+import { protectedRout } from "./authAPI.js";
+import { User } from "../models/userSchema.js";
 import { ERROR_401 } from "../const.js";
 import { v4 as uuidv4 } from "uuid";
+import ProductService from "../Services/ProductService.js";
+import UserService from "../Services/userService.js";
 
 const validCategories = ["t-shirt", "hoodie", "hat", "necklace", "bracelet", "shoes", "pillow", "mug", "book", "puzzle", "cards"];
 
-export const getProduct = async (req: IncomingMessage, res: ServerResponse, idOrType: string) => {
+const productService = new ProductService();
+const userService = new UserService();
+
+export default (app) => {
+    app.get('/api/product/:idorType', function (req, res) { getProduct(req, res, req.params.idorType); });
+
+    app.post('/api/product', function (req, res) { createProduct(req, res); });
+
+    app.put('/api/product/:id', function (req, res) { updateProduct(req, res, req.params.id); });
+
+    app.delete('/api/product/:id', function (req, res) { removeProduct(req, res, req.params.id); });
+
+
+}
+
+const getProduct = async (req: IncomingMessage, res: ServerResponse, idOrType: string) => {
     const userId = protectedRout(req, res);
     if (userId !== ERROR_401) {
-        const user = await User.findOne(userId);
+        const user = await userService.getUser(userId.userId);
         if (user) {
             //We try to interpret input as Id. If that fails, we interpret as category
-            const product = await Product.findOne({ id: idOrType }).select('-__v -_id');
+            const product = await productService.getProductById(idOrType);
             if (!product) {
-                const products = await Product.find({ category: idOrType }).select('-__v -_id');
+                const products = await productService.getProductsByCategory(idOrType);
                 if (products.length == 0) {
                     res.writeHead(400, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({ message: 'Product Not Found' }));
@@ -47,10 +63,10 @@ export const getProduct = async (req: IncomingMessage, res: ServerResponse, idOr
 };
 
 
-export const createProduct = async (req: IncomingMessage, res: ServerResponse) => {
+const createProduct = async (req: IncomingMessage, res: ServerResponse) => {
     const userId = protectedRout(req, res);
     if (userId !== ERROR_401) {
-        const user = await User.findOne(userId);
+        const user = await userService.getUser(userId.userId);
         if (user) {
             if (["A", "M"].includes(user.permission)) {
                 // Read request body.
@@ -68,16 +84,8 @@ export const createProduct = async (req: IncomingMessage, res: ServerResponse) =
                             res.end(JSON.stringify({ message: 'Invalid Details' }));
                             return;
                         }
-                        const product = new Product({
-                            id: uuidv4(),
-                            name: name,
-                            category: category,
-                            description: description,
-                            price: price,
-                            stock: stock,
-                            image: image
-                        });
-                        try { await product.save(); } catch (err) {
+                        let prodId;
+                        try { prodId = await productService.createProduct({ name, category, description, price, stock, image }); } catch (err) {
                             res.statusCode = 400;
                             res.end();
                             return;
@@ -85,7 +93,7 @@ export const createProduct = async (req: IncomingMessage, res: ServerResponse) =
 
                         res.statusCode = 201;
                         res.setHeader("Content-Type", "application/json");
-                        res.end(JSON.stringify({ id: product.id }));
+                        res.end(JSON.stringify({ id: prodId }));
                         return;
                     } catch (err) {
                         res.statusCode = 400;
@@ -120,13 +128,13 @@ export const createProduct = async (req: IncomingMessage, res: ServerResponse) =
 
 };
 
-export const updateProduct = async (req: IncomingMessage, res: ServerResponse, id: string) => {
+const updateProduct = async (req: IncomingMessage, res: ServerResponse, id: string) => {
     const userId = protectedRout(req, res);
     if (userId !== ERROR_401) {
-        const user = await User.findOne(userId);
+        const user = await userService.getUser(userId.userId);
         if (user) {
             if (["A", "M"].includes(user.permission)) {
-                const prod = await Product.findOne({ id: id });
+                const prod = await productService.getProductById(id);
                 if (!prod) {
                     res.writeHead(400, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({ message: 'Product Not Found' }));
@@ -156,16 +164,7 @@ export const updateProduct = async (req: IncomingMessage, res: ServerResponse, i
                             return;
                         }
 
-                        const productData = {
-                            name: name || prod.name,
-                            category: category || prod.category,
-                            description: description || prod.description,
-                            price: price || prod.price,
-                            stock: stock || prod.stock,
-                            image: image || prod.image
-                        }
-
-                        await prod.updateOne(productData);
+                        await productService.updateProduct({ id, name, category, description, price, stock, image })
 
                         res.statusCode = 200;
                         res.setHeader("Content-Type", "application/json");
@@ -198,18 +197,13 @@ export const updateProduct = async (req: IncomingMessage, res: ServerResponse, i
 
 }
 
-export const removeProduct = async (req: IncomingMessage, res: ServerResponse, id: string) => {
+const removeProduct = async (req: IncomingMessage, res: ServerResponse, id: string) => {
     const userId = protectedRout(req, res);
     if (userId !== ERROR_401) {
-        const user = await User.findOne(userId);
+        const user = await userService.getUser(userId.userId);
         if (user) {
             if (user.permission == "A") {
-                const prod = await Product.findOne({ id: id });
-
-                if (prod) {
-                    await prod.delete();
-                    // await Product.deleteOne({ id:prod.id});
-                }
+                await productService.removeProduct(id);
 
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end();
@@ -235,6 +229,6 @@ export const removeProduct = async (req: IncomingMessage, res: ServerResponse, i
             );
         }
 
-    } 
-    
+    }
+
 }

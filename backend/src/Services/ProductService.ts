@@ -14,7 +14,7 @@ class ProductService {
             image: image
         });
         const res = await product.save();
-        return res;
+        return res.id;
     }
 
     async getProductById(id: string) {

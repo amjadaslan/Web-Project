@@ -1,10 +1,12 @@
 import { randomUUID } from "crypto";
 import { IncomingMessage, ServerResponse } from "http";
 import Product from "../models/productSchema.js";
-import { protectedRout } from "../auth.js";
+import { protectedRout } from "./authAPI.js";
 import {User} from "../models/userSchema.js";
 import { ERROR_401 } from "../const.js";
 import { v4 as uuidv4 } from "uuid";
+
+
 
 export const updateCart = async (req: IncomingMessage, res: ServerResponse) => {
     const userId = protectedRout(req, res);
