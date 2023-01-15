@@ -3,7 +3,6 @@ import { IncomingMessage, ServerResponse } from "http";
 import { protectedRout } from "./authAPI.js";
 import { User } from "../models/userSchema.js";
 import { ERROR_401 } from "../const.js";
-import { v4 as uuidv4 } from "uuid";
 import ProductService from "../Services/ProductService.js";
 import UserService from "../Services/userService.js";
 
@@ -52,12 +51,6 @@ const getProduct = async (req: IncomingMessage, res: ServerResponse, idOrType: s
             }
             return;
         }
-        res.statusCode = 401;
-        res.end(
-            JSON.stringify({
-                message: "Unauthenticated user",
-            })
-        );
     }
 
 };

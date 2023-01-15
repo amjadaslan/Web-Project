@@ -5,13 +5,22 @@ import { protectedRout } from "./authAPI.js";
 import {User} from "../models/userSchema.js";
 import { ERROR_401 } from "../const.js";
 import { v4 as uuidv4 } from "uuid";
+import ProductService from "../Services/ProductService.js";
+import UserService from "../Services/userService.js";
 
+
+const productService = new ProductService();
+const userService = new UserService();
+
+export default (app) => {
+
+}
 
 
 export const updateCart = async (req: IncomingMessage, res: ServerResponse) => {
     const userId = protectedRout(req, res);
     if (userId !== ERROR_401) {
-        const user = await User.findOne(userId);
+        const user = await userService.getUser(userId.userId);
         if (user) {
             if (user.permission === "U" ) {
                 // Read request body.
