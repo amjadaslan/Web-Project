@@ -41,13 +41,6 @@ const addToCart = async (req: Request, res: Response, userId: string) => {
         res.end(JSON.stringify({ message: "Invalid Details" }));
         return;
     }
-    const cart = await cartService.getCart(userId);
-    if (!cart) {
-        res.statusCode = 404;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: "Cart does not exist!" }));
-        return;
-    }
     await cartService.addToCart(userId, prodCount, prodId, prodPrice);
     res.statusCode = 201;
     res.setHeader("Content-Type", "application/json");

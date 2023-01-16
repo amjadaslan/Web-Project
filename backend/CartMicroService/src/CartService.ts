@@ -14,7 +14,13 @@ class CartService {
         if (!cart) {
             cart = new Cart({ userId: userID, items: [] });
         }
-        cart.items.push(cartItem);
+        const itemAlreadyExists = cart.items.find(i => i.productId === prodId);
+        if (itemAlreadyExists) {
+            itemAlreadyExists.count += prodCount;
+        }
+        else {
+            cart.items.push(cartItem);
+        }
         cart.total += prodCount * prodPrice;
         await cart.save();
     }
