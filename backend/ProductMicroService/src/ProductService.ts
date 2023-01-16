@@ -1,8 +1,9 @@
-import Product from "../models/productSchema.js";
+import Product from "./productSchema.js";
 import { v4 as uuidv4 } from "uuid";
 
 class ProductService {
 
+    //Creates a product and saves it within the DB
     async createProduct({ name, category, description, price, stock, image }) {
         const product = new Product({
             id: uuidv4(),
@@ -17,16 +18,19 @@ class ProductService {
         return res.id;
     }
 
+    //Returns a product from the DB based on it's id
     async getProductById(id: string) {
         const product = await Product.findOne({ id: id }).select('-__v -_id');
         return product;
     }
 
+    //Returns a list of products based on a category
     async getProductsByCategory(type: string) {
         const products = await Product.find({ category: type }).select('-__v -_id');
         return products;
     }
 
+    //Updates fields in a product (e.g., price, count)
     async updateProduct({ id, name, category, description, price, stock, image }) {
         const prod = await Product.findOne({ id: id });
         const productData = {
@@ -40,6 +44,7 @@ class ProductService {
         await prod.updateOne(productData);
     }
 
+    //Removes product from the DB
     async removeProduct(id: string) {
         const prod = await Product.findOne({ id: id });
 

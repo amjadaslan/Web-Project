@@ -1,75 +1,65 @@
-import { randomUUID } from "crypto";
-import { IncomingMessage, ServerResponse } from "http";
-import Product from "../models/productSchema.js";
-import { protectedRout } from "./authAPI.js";
-import {User} from "../models/userSchema.js";
-import { ERROR_401 } from "../const.js";
-import { v4 as uuidv4 } from "uuid";
-import ProductService from "../Services/ProductService.js";
-import UserService from "../Services/userService.js";
+import { Request, Response } from "express";
+import OrderService from "./OrderService.js";
 
-
-const productService = new ProductService();
-const userService = new UserService();
+const orderService = new OrderService();
 
 export default (app) => {
 
+    app.get('/api/order/:orderId', function (req: Request, res: Response) { getOrder(req, res, req.params.orderId); });
+
+    app.post('/api/order/:username', function (req: Request, res: Response) { createOrder(req, res, req.params.username); });
+
+    app.put('/api/order/:orderId', function (req: Request, res: Response) { markAsDelivered(req, res, req.params.orderId); });
+}
+
+const getOrder = async (req: Request, res: Response, orderId: string) => {
+    const order = await orderService.getOrder(orderId);
+    if (!order) {
+        res.statusCode = 404;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ message: "Cart does not exist!" }));
+        return;
+    }
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify(order));
+    return;
 }
 
 
-export const updateCart = async (req: IncomingMessage, res: ServerResponse) => {
-    const userId = protectedRout(req, res);
-    if (userId !== ERROR_401) {
-        const user = await userService.getUser(userId.userId);
-        if (user) {
-            if (user.permission === "U" ) {
-                // Read request body.
-                let body = "";
-                req.on("data", (chunk) => {
-                    body += chunk.toString();
-                });
-                req.on("end", async () => {
-                    // Parse request body as JSON
-                    try {
-                        let { count, prodId } = JSON.parse(body);
-                        user.cart.push({count,prodId});
-                        try { await user.save(); } catch (err) {
-                            res.statusCode = 400;
-                            res.end();
-                            return;
-                        }
-
-                        res.statusCode = 201;
-                        res.setHeader("Content-Type", "application/json");
-                        res.end();
-                        return;
-                    } catch (err) {
-                        res.statusCode = 400;
-                        res.end();
-                        return;
-                    }
-
-                    // Mongoose will automatically insert this document to our collection!
-
-                });
-                return;
-            }
-            //No Authorization to change permission
-            else {
-                res.statusCode = 403;
-                res.end(
-                    JSON.stringify({
-                        message: "User has no proper permissions",
-                    })
-                );
-                return;
-            }
-        }
-        res.statusCode = 401;
-        res.end(
-            JSON.stringify({
-                message: "Unauthenticated user",
-            })
-        );
+const createOrder = async (req: Request, res: Response, userName: string) => {
+    const customerName = userName;
+    const streetAddress = req.params.streetAddress;
+    const apartment = req.params.apartment;
+    const city = req.params.city;
+    const state = req.params.state;
+    const country = req.params.country;
+    const zipCode = req.params.zipCode;
+    const order = await orderService.createOrder({ customerName, streetAddress, apartment, city, state, country, zipCode });
+    if (!order) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end({ message: "Error! Order could not be created." });
+        return;
     }
+    res.statusCode = 201;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ id: order.id }));
+    return;
+
+}
+
+const markAsDelivered = async (req: Request, res: Response, orderId: string) => {
+    const order = await orderService.getOrder(orderId);
+    if (!order) {
+        res.statusCode = 404;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ message: "Order does not exist!" }));
+        return;
+    }
+    await orderService.markAsDelivered(orderId);
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ id: order.id }));
+    return;
 }

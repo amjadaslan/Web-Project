@@ -87,7 +87,11 @@ const loginRoute = (req: Request, res: Response) => {
     const token = jwt.sign({ userId: user.id }, secretKey, {
       expiresIn: 86400, // expires in 24 hours
     });
-
+    /** check if this is right */
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true
+    });
     res.end(
       JSON.stringify({
         token: token,
@@ -153,8 +157,7 @@ const signupRoute = (req: Request, res: Response) => {
 };
 
 const changePermission = async (req: Request, res: Response) => {
-  const user = JSON.parse(req.params.user);
-  if (user.permission == "A") {
+  if (req.params.permission == "A") {
     // Read request body.
     let body = "";
     req.on("data", (chunk) => {
