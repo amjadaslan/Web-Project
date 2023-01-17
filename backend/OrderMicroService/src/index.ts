@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import OrderService from "./OrderService.js";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 
 
 const orderService = new OrderService();
@@ -38,22 +38,46 @@ const createOrder = async (req: Request, res: Response, userName: string) => {
     const country = req.body.country;
     const zipCode = req.body.zipCode;
     const userId = req.body.userId;
-    const order = await orderService.createOrder({ customerName, streetAddress, apartment, city, state, country, zipCode });
-    if (!order) {
+    let order;
+    try {
+        order = await orderService.createOrder({ customerName, streetAddress, apartment, city, state, country, zipCode });
+
+        if (!order) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end({ message: "Error! Order could not be created." });
+            return;
+        }
+
+        let cartRes: AxiosResponse;
+        cartRes = await axios.get(`${process.env.CART}/api/cart/${userId}`);
+        const cart = cartRes.data.cart;
+        //TODO: #2 Verify Item in stock before placing an order
+        for (let item of cart.items) {
+            const productRes = await axios.get(`${process.env.PRODUCT}/api/product/${item.productId}`);
+            const product = productRes.data.product;
+            if (product.stock < item.count) {
+                //TODO: #3 find a proper error code for each failed task
+                res.statusCode = 400;
+                res.setHeader("Content-Type", "application/json");
+                res.end(JSON.stringify({ message: "Not enough items in stock!" }));
+                return;
+            }
+        }
+
+        //TODO: #5 Update stock for all items in order.
+        for (let item of cart.items) {
+            const productRes = await axios.get(`${process.env.PRODUCT}/api/product/${item.productId}`);
+            const product = productRes.data.product;
+            const newStock = product.stock - item.count;
+            await axios.put(`${process.env.PRODUCT}/api/product/${item.productId}`, { newStock });
+        }
+        await axios.delete(`${process.env.CART}/api/cart/${userId}`);
+    } catch (err) {
         res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end({ message: "Error! Order could not be created." });
+        res.end();
         return;
     }
-    const cartRes = await axios.get(`${process.env.CART}/api/cart/${userId}`);
-    const cart = cartRes.data.cart;
-    for (let item of cart.items) {
-        const productRes = await axios.get(`${process.env.PRODUCT}/api/product/${item.productId}`);
-        const product = cartRes.data.product;
-        const newStock = product.stock - item.count;
-        await axios.put(`${process.env.PRODUCT}/api/product/${item.productId}`, { newStock });
-    }
-    await axios.delete(`${process.env.CART}/api/cart/${userId}`);
     res.statusCode = 201;
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify({ id: order.id }));
@@ -61,15 +85,23 @@ const createOrder = async (req: Request, res: Response, userName: string) => {
 
 }
 
+//TODO: #6 Mark order as delivered once employee submits a request
 const markAsDelivered = async (req: Request, res: Response, orderId: string) => {
-    const order = await orderService.getOrder(orderId);
-    if (!order) {
-        res.statusCode = 404;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: "Order does not exist!" }));
+    let order;
+    try {
+        order = await orderService.getOrder(orderId);
+        if (!order) {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ message: "Order does not exist!" }));
+            return;
+        }
+        await orderService.markAsDelivered(orderId);
+    } catch (err) {
+        res.statusCode = 400;
+        res.end();
         return;
     }
-    await orderService.markAsDelivered(orderId);
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify({ id: order.id }));

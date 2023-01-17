@@ -15,9 +15,18 @@ export default (app) => {
 
 }
 
+//TODO: #7 Add try\catch to all functions using mongoose methods
+
 //Retrieves the cart of the specified user.
 const getCart = async (req: Request, res: Response, userId: string) => {
-    const cart = await cartService.getCart(userId);
+    let cart;
+    try {
+        cart = await cartService.getCart(userId);
+    } catch (err) {
+        res.statusCode = 400;
+        res.end();
+        return;
+    }
     if (!cart) {
         res.statusCode = 404;
         res.setHeader("Content-Type", "application/json");
@@ -41,7 +50,13 @@ const addToCart = async (req: Request, res: Response, userId: string) => {
         res.end(JSON.stringify({ message: "Invalid Details" }));
         return;
     }
-    await cartService.addToCart(userId, prodCount, prodId, prodPrice);
+    try {
+        await cartService.addToCart(userId, prodCount, prodId, prodPrice);
+    } catch (err) {
+        res.statusCode = 400;
+        res.end();
+        return;
+    }
     res.statusCode = 201;
     res.setHeader("Content-Type", "application/json");
     res.end();
@@ -57,7 +72,13 @@ const updateCartItem = async (req: Request, res: Response, userId: string) => {
         res.end(JSON.stringify({ message: "Invalid Details" }));
         return;
     }
-    await cartService.updateCartItem(userId, prodCount, prodId);
+    try {
+        await cartService.updateCartItem(userId, prodCount, prodId);
+    } catch (err) {
+        res.statusCode = 400;
+        res.end();
+        return;
+    }
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
     res.end();
@@ -65,5 +86,9 @@ const updateCartItem = async (req: Request, res: Response, userId: string) => {
 
 //Removes a cart of the specified user.
 const removeCart = async (req: Request, res: Response, userId: string) => {
-    await cartService.removeCart(userId);
+    try { await cartService.removeCart(userId); } catch (err) {
+        res.statusCode = 400;
+        res.end();
+        return;
+    }
 }

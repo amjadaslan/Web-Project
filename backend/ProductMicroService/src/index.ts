@@ -96,9 +96,18 @@ const createProduct = async (req: Request, res: Response) => {
 
 };
 
+
+//TODO: #8 replace parsing body manually with express body-parser
 const updateProduct = async (req: Request, res: Response, id: string) => {
     if (["A", "M"].includes(req.params.permission)) {
-        const prod = await productService.getProductById(id);
+        let prod;
+        try {
+            prod = await productService.getProductById(id);
+        } catch (err) {
+            res.statusCode = 400;
+            res.end();
+            return;
+        }
         if (!prod) {
             res.writeHead(400, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ message: 'Product Not Found' }));
@@ -127,8 +136,13 @@ const updateProduct = async (req: Request, res: Response, id: string) => {
                     res.end(JSON.stringify({ message: 'Invalid Details' }));
                     return;
                 }
-
-                await productService.updateProduct({ id, name, category, description, price, stock, image })
+                try {
+                    await productService.updateProduct({ id, name, category, description, price, stock, image });
+                } catch (err) {
+                    res.statusCode = 400;
+                    res.end();
+                    return;
+                }
 
                 res.statusCode = 200;
                 res.setHeader("Content-Type", "application/json");
@@ -154,7 +168,13 @@ const updateProduct = async (req: Request, res: Response, id: string) => {
 const removeProduct = async (req: Request, res: Response, id: string) => {
 
     if (req.params.permission == "A") {
-        await productService.removeProduct(id);
+        try {
+            await productService.removeProduct(id);
+        } catch (err) {
+            res.statusCode = 400;
+            res.end();
+            return;
+        }
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end();
