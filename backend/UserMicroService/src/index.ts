@@ -5,6 +5,8 @@ import express from "express";
 
 import UserService from "./userService.js";
 
+const secretKey = process.env.SECRET_KEY || "your_secret_key";
+
 const userService = new UserService();
 const app = express();
 

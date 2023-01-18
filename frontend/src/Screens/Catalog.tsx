@@ -24,6 +24,7 @@ export class prodExample {
     description: string = Math.random()<0.5 ? "This is a short description of the productttttttttttttttttttrtrtrtrttrtrtrtrtrtrtrtrtrtrttrt" : "hi";
     price: number = 123;
     quantity: number = 1;
+    category: string = "Computers";
 }
 
 const useStyles = makeStyles(() =>
@@ -56,10 +57,10 @@ export default function Catalog() {
                       {product.name}
                     </Typography>
                     <Typography gutterBottom variant="body2" color="textSecondary" component="p">
-                      {product.description}
+                      {product.category}
                     </Typography>
                     <Button variant="contained" color="primary">
-                      Add to cart
+                      View
                     </Button>
                   </CardContent>
                 </Card>
