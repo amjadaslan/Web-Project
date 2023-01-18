@@ -1,4 +1,4 @@
-import { Order, Address } from "./orderSchema.js";
+import { Order, Address,Coupon } from "./orderSchema.js";
 import { v4 as uuidv4 } from "uuid";
 
 
@@ -20,6 +20,18 @@ class OrderService {
         order.status = 'Delivered';
         return order;
     }
+
+    async createCoupon({value, total}){
+        const coupon = new Coupon({value: value,total:total});
+        await coupon.save();
+        return coupon;
+    }
+
+    async validateCoupon({value}){
+        const coupon = await Coupon.findOne({ value: value }).select('-__v -_id');
+        return coupon?coupon.total:-1;
+    }
+
 }
 
 export default OrderService;

@@ -2,11 +2,27 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import * as bcrypt from "bcrypt";
 import express from "express";
+import { DBUSERNAME, DBPASS } from "./const.js";
 
 import UserService from "./userService.js";
+import mongoose from "mongoose";
+import bodyParser from "body-parser";
 
+const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
+await mongoose.connect(dbUri);
+
+
+const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const userService = new UserService();
 const app = express();
+const port = 3004;
+
+const admin = await userService.getUserByUsername("admin");
+if (!admin) {
+  await userService.createAdmin();
+}
+
+app.use(bodyParser.json());
 
 app.post('/api/user/signup', function (req, res) { signupRoute(req, res); });
 
@@ -16,9 +32,10 @@ app.put('/api/user/permission', function (req, res) { changePermission(req, res)
 
 app.get('/api/user/:userId/permission', function (req, res) { getPermission(req, res, req.params.userId); });
 
-app.listen();
+app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
 const getPermission = async (req: Request, res: Response, userId: string) => {
+  console.log(userId);
   let user;
   try {
     user = await userService.getUser(userId);
@@ -27,7 +44,7 @@ const getPermission = async (req: Request, res: Response, userId: string) => {
     res.end();
     return;
   }
-  res.statusCode = 201; // Created a new user!
+  res.statusCode = 200;
   res.end(
     JSON.stringify({
       permission:
@@ -40,19 +57,6 @@ const getPermission = async (req: Request, res: Response, userId: string) => {
 const loginRoute = async (req: Request, res: Response) => {
   // Read request body.
   let credentials = req.body;
-  // req.on("data", (chunk) => {
-  //   body += chunk.toString();
-  // });
-  // req.on("end", async () => {
-  //   // Parse request body as JSON
-  //   let credentials;
-  //   try {
-  //     credentials = JSON.parse(body);
-  //   } catch (err) {
-  //     res.statusCode = 400;
-  //     res.end();
-  //     return;
-  //   }
 
   // TODO: validate that the body has the "shape" you are expect: { username: <username>, password: <password>}
   if (!credentials.username || !credentials.password) {
@@ -101,7 +105,7 @@ const loginRoute = async (req: Request, res: Response) => {
 
   // Create JWT token.
   // This token contain the userId in the data section.
-  const token = jwt.sign({ userId: user.id }, secretKey, {
+  const token = jwt.sign({ userId: user.userId }, secretKey, {
     expiresIn: 86400, // expires in 24 hours
   });
   // /** check if this is right */
@@ -120,20 +124,6 @@ const loginRoute = async (req: Request, res: Response) => {
 
 const signupRoute = async (req: Request, res: Response) => {
   let credentials = req.body;
-  // req.on("data", (chunk) => {
-  //   body += chunk.toString();
-  // });
-  // req.on("end", async () => {
-  //   // Parse request body as JSON
-  //   let credentials;
-
-  //   try {
-  //     credentials = JSON.parse(body);
-  //   } catch (err) {
-  //     res.statusCode = 400;
-  //     res.end();
-  //     return;
-  //   }
 
   if (!credentials.username || !credentials.password) {
     res.statusCode = 400;
@@ -185,19 +175,6 @@ const changePermission = async (req: Request, res: Response) => {
   if (req.params.permission == "A") {
     // Read request body.
     let credentials = req.body;
-    // req.on("data", (chunk) => {
-    //   body += chunk.toString();
-    // });
-    // req.on("end", async () => {
-    //   // Parse request body as JSON
-    //   let credentials;
-    //   try {
-    //     credentials = JSON.parse(body);
-    //   } catch (err) {
-    //     res.statusCode = 400;
-    //     res.end();
-    //     return;
-    //   }
     if (!credentials.username || !credentials.permission || !["W", "M"].includes(credentials.permission)) {
       res.statusCode = 400;
       res.end(JSON.stringify({ message: "Missing permission or username" }));

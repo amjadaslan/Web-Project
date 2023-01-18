@@ -1,22 +1,33 @@
 
-import { Request, Response } from "express";
+import bodyParser from "body-parser";
+import express, { Request, Response } from "express";
+import mongoose from "mongoose";
+import { DBPASS, DBUSERNAME } from "./const.js";
 import ProductService from "./ProductService.js";
 
 const validCategories = ["t-shirt", "hoodie", "hat", "necklace", "bracelet", "shoes", "pillow", "mug", "book", "puzzle", "cards"];
 
 const productService = new ProductService();
 
-export default (app) => {
-    app.get('/api/product/:idorType', function (req: Request, res: Response) { getProduct(req, res, req.params.idorType); });
+const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
+await mongoose.connect(dbUri);
 
-    app.post('/api/product', function (req: Request, res: Response) { createProduct(req, res); });
+const app = express();
 
-    app.put('/api/product/:id', function (req: Request, res: Response) { updateProduct(req, res, req.params.id); });
+app.use(bodyParser.json());
 
-    app.delete('/api/product/:id', function (req: Request, res: Response) { removeProduct(req, res, req.params.id); });
+const port = 3001;
+app.get('/api/product/:idorType', function (req: Request, res: Response) { getProduct(req, res, req.params.idorType); });
+
+app.post('/api/product', function (req: Request, res: Response) { createProduct(req, res); });
+
+app.put('/api/product/:id', function (req: Request, res: Response) { updateProduct(req, res, req.params.id); });
+
+app.delete('/api/product/:id', function (req: Request, res: Response) { removeProduct(req, res, req.params.id); });
+
+app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
 
-}
 
 const getProduct = async (req: Request, res: Response, idOrType: string) => {
     //We try to interpret input as Id. If that fails, we interpret as category

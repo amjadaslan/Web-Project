@@ -66,6 +66,11 @@ const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
 
 apiGateway.use(bodyParser.json());
 apiGateway.use(async (req, res, next) => {
+  console.log(req.url);
+  if (req.url === '/api/user/login' || req.url === '/api/user/signup') {
+    next();
+    return;
+  }
   const user = protectedRout(req, res);
   let response: AxiosResponse;
   try {
@@ -95,9 +100,9 @@ apiGateway.use('/api/user', async (req, res) => {
     // Make the request to the microservice
     const response = await axios({
       method: req.method,
-      url: `${userServiceURL}${req.url}`,
+      url: `${userServiceURL}/api/user${req.url}`,
       data: req.body,
-      headers: req.headers
+      params: req.params
     });
 
     // Send the response back to the client
@@ -113,7 +118,7 @@ apiGateway.use('/api/cart', async (req, res) => {
     // Make the request to the microservice
     const response = await axios({
       method: req.method,
-      url: `${cartServiceURL}${req.url}`,
+      url: `${cartServiceURL}/api/cart${req.url}`,
       data: req.body,
       headers: req.headers
     });
@@ -131,7 +136,7 @@ apiGateway.use('/api/order', async (req, res) => {
     // Make the request to the microservice
     const response = await axios({
       method: req.method,
-      url: `${orderServiceURL}${req.url}`,
+      url: `${orderServiceURL}/api/order${req.url}`,
       data: req.body,
       headers: req.headers
     });
@@ -149,7 +154,7 @@ apiGateway.use('/api/product', async (req, res) => {
     // Make the request to the microservice
     const response = await axios({
       method: req.method,
-      url: `${productServiceURL}${req.url}`,
+      url: `${productServiceURL}/api/product${req.url}`,
       data: req.body,
       headers: req.headers
     });

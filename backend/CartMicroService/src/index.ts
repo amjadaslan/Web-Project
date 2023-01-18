@@ -1,19 +1,29 @@
-import { Request, Response } from "express";
+import bodyParser from "body-parser";
+import express, { Request, Response } from "express";
+import mongoose from "mongoose";
 import CartService from "./CartService.js";
+import { DBPASS, DBUSERNAME } from "./const.js";
 
 const cartService = new CartService();
 
-export default (app) => {
-    app.get('/api/cart/:userid', function (req: Request, res: Response) { getCart(req, res, req.params.userid); });
+const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
+await mongoose.connect(dbUri);
 
-    app.post('/api/cart/:userid', function (req: Request, res: Response) { addToCart(req, res, req.params.userid); });
+const app = express();
 
-    app.put('/api/cart/:userid', function (req: Request, res: Response) { updateCartItem(req, res, req.params.userid); });
+app.use(bodyParser.json());
 
-    app.delete('/api/cart/:userid', function (req: Request, res: Response) { removeCart(req, res, req.params.userid); });
+const port = 3002;
+app.get('/api/cart/:userid', function (req: Request, res: Response) { getCart(req, res, req.params.userid); });
 
+app.post('/api/cart/:userid', function (req: Request, res: Response) { addToCart(req, res, req.params.userid); });
 
-}
+app.put('/api/cart/:userid', function (req: Request, res: Response) { updateCartItem(req, res, req.params.userid); });
+
+app.delete('/api/cart/:userid', function (req: Request, res: Response) { removeCart(req, res, req.params.userid); });
+
+app.listen(port, () => { console.log(`Listening to port ${port}`) });
+
 
 //TODO: #7 Add try\catch to all functions using mongoose methods
 
