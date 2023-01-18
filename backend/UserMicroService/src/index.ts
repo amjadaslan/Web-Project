@@ -55,6 +55,7 @@ const getPermission = async (req: Request, res: Response, userId: string) => {
 
 //TODO: #10 Save token in a proper format (cookies)
 const loginRoute = async (req: Request, res: Response) => {
+  console.log("login");
   // Read request body.
   let credentials = req.body;
 

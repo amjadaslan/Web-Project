@@ -14,7 +14,7 @@ import {
 import { useState } from 'react';
 import EcommerceAppBar from './components/EcommerceAppBar';
 
-export default function Checkout() {
+export default function OldCheckout() {
 
     const useStyles = makeStyles((theme) => ({
         root: {

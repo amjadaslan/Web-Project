@@ -64,13 +64,23 @@ const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
   return user;
 };
 
+//Alow cross origin requests
+//TODO: #13 Only allow cross origin from Front end url?
+apiGateway.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
 apiGateway.use(bodyParser.json());
 apiGateway.use(async (req, res, next) => {
   console.log(req.url);
+  //Protected route is not relevant for login/signup requests, as no token exists.
   if (req.url === '/api/user/login' || req.url === '/api/user/signup') {
     next();
     return;
   }
+
   const user = protectedRout(req, res);
   let response: AxiosResponse;
   try {
@@ -96,6 +106,7 @@ apiGateway.use(async (req, res, next) => {
 
 //Call to UserMicroService
 apiGateway.use('/api/user', async (req, res) => {
+  console.log("user");
   try {
     // Make the request to the microservice
     const response = await axios({

@@ -14,12 +14,8 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
 
-const theme = createTheme({
-    palette: {
-        mode: 'dark',
-    },
-});
-const apiGatewayUrl = process.env.ApiGatewayUrl || 'localhost:3000';
+const theme = createTheme();
+const apiGatewayUrl = process.env.ApiGatewayUrl || '//localhost:3000';
 
 export default function SignIn() {
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -27,7 +23,7 @@ export default function SignIn() {
         const data = new FormData(event.currentTarget);
         await axios({
             method: 'POST',
-            url: apiGatewayUrl,
+            url: `${apiGatewayUrl}/api/user/login`,
             data: {
                 "username": data.get('username'),
                 "password": data.get('password')
@@ -38,7 +34,6 @@ export default function SignIn() {
                 password: data.get('password'),
             });
             console.log(response.data.token);
-
         }).catch((error) => {
             console.log(error);
         });
