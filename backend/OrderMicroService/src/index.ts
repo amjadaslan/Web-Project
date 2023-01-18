@@ -1,21 +1,38 @@
-import { Request, Response } from "express";
+import express, { Request, Response } from "express";
 import OrderService from "./OrderService.js";
 import axios, { AxiosResponse } from "axios";
+import mongoose from "mongoose";
+import { DBPASS, DBUSERNAME } from "./const.js";
+import bodyParser from "body-parser";
 
 
 const orderService = new OrderService();
 
-export default (app) => {
+const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
+await mongoose.connect(dbUri);
 
-    app.get('/api/order/:orderId', function (req: Request, res: Response) { getOrder(req, res, req.params.orderId); });
+const app = express();
 
-    app.post('/api/order/:username', function (req: Request, res: Response) { createOrder(req, res, req.params.username); });
+app.use(bodyParser.json());
 
-    app.put('/api/order/:orderId', function (req: Request, res: Response) { markAsDelivered(req, res, req.params.orderId); });
-}
+const port = 3003;
+
+app.get('/api/order/:orderId', function (req: Request, res: Response) { getOrder(req, res, req.params.orderId); });
+
+app.post('/api/order/:username', function (req: Request, res: Response) { createOrder(req, res, req.params.username); });
+
+app.put('/api/order/:orderId', function (req: Request, res: Response) { markAsDelivered(req, res, req.params.orderId); });
+
+app.listen(port, () => { console.log(`Listening to port ${port}`) });
+
 
 const getOrder = async (req: Request, res: Response, orderId: string) => {
-    const order = await orderService.getOrder(orderId);
+    let order;
+    try { order = await orderService.getOrder(orderId); } catch (err) {
+        res.statusCode = 400;
+        res.end();
+        return;
+    }
     if (!order) {
         res.statusCode = 404;
         res.setHeader("Content-Type", "application/json");
@@ -38,6 +55,7 @@ const createOrder = async (req: Request, res: Response, userName: string) => {
     const country = req.body.country;
     const zipCode = req.body.zipCode;
     const userId = req.body.userId;
+    const coupon = req.body.coupon;
     let order;
     try {
         order = await orderService.createOrder({ customerName, streetAddress, apartment, city, state, country, zipCode });
