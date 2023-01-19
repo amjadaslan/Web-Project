@@ -12,6 +12,9 @@ import bodyParser from "body-parser";
 const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);
 
+const frontEndUrl = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000";
+const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3005";
+
 
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const userService = new UserService();
@@ -26,7 +29,7 @@ if (!admin) {
 app.use(bodyParser.json());
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: apiGatewayUrl,
   credentials: true
 }))
 

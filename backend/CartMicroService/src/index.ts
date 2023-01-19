@@ -14,6 +14,7 @@ const app = express();
 app.use(bodyParser.json());
 
 const port = 3002;
+
 app.get('/api/cart/:userid', function (req: Request, res: Response) { getCart(req, res, req.params.userid); });
 
 app.post('/api/cart/:userid', function (req: Request, res: Response) { addToCart(req, res, req.params.userid); });
@@ -23,7 +24,6 @@ app.put('/api/cart/:userid', function (req: Request, res: Response) { updateCart
 app.delete('/api/cart/:userid', function (req: Request, res: Response) { removeCart(req, res, req.params.userid); });
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
-
 
 //TODO: #7 Add try\catch to all functions using mongoose methods
 
