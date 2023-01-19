@@ -11,18 +11,47 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
+import { FormControl, InputLabel, MenuItem, Select } from '@material-ui/core';
+import { apiGatewayUrl } from './components/constants';
 
 const theme = createTheme();
 
 export default function SignUp() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
+    const username = data.get('username'), password = data.get('password'),
+    question = data.get('question'), answer = data.get('answer');
+
+    if (username == '' || password == '' || question == '' || answer == '') {
+        console.log('Please fill required fields');
+        console.log({
+          "username": username,
+          "password": password,
+          "question" : question,
+          "answer" : answer
+      })
+        return;
+    }
+
+    await axios({
+        method: 'POST',
+        url: `${apiGatewayUrl}/api/user/signup`,
+        data: {
+            "username": username,
+            "password": password,
+            "question" : question,
+            "answer" : answer
+        }
+    }).then(response => {
+        console.log({
+            username: response.data.username
+        });
+    }).catch((error) => {
+        console.log(error);
     });
-  };
+};
 
   return (
     <ThemeProvider theme={theme}>
@@ -44,35 +73,14 @@ export default function SignUp() {
           </Typography>
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  autoFocus
-                  required
-                  fullWidth
-                  name="firstName"
-                  id="firstName"
-                  label="First Name"
-                  autoComplete="given-name"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  name="lastName"
-                  id="lastName"
-                  label="Last Name"
-                  autoComplete="family-name"
-                />
-              </Grid>
               <Grid item xs={12}>
                 <TextField
                   required
                   fullWidth
-                  name="email"
-                  id="email"
-                  label="Email Address"
-                  autoComplete="email"
+                  name="username"
+                  id="username"
+                  label="Username"
+                  autoComplete="username"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -86,15 +94,38 @@ export default function SignUp() {
                   type="password"
                 />
               </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id="demo-simple-select-label">Security Question</InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={10}
+                    label="Age"
+                    onChange={() => { }}
+                  >
+                    <MenuItem value={10}>How old are you?</MenuItem>
+                    <MenuItem value={20}>Twenty</MenuItem>
+                    <MenuItem value={30}>Thirty</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="answer"
+                  id="answer"
+                  label="Answer"
+                  type="answer"
+                />
+              </Grid>
             </Grid>
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 2, mb: 2 }}
-              onClick={() => {
-                axios.get("http//google.com")
-              }}
             >
               Sign Up
             </Button>

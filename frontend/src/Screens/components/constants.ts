@@ -1,0 +1,1 @@
+export const apiGatewayUrl = process.env.ApiGatewayUrl || '//localhost:3000';

@@ -14,8 +14,9 @@ import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import AddressForm from './AddressForm';
 import PaymentForm from './PaymentForm';
-import Review from './Review';
+import { Review } from './Review';
 import EcommerceAppBar from '../components/EcommerceAppBar';
+import { PaymentDetails } from '../../Models/PaymentDetails';
 
 const steps = ['Shipping address', 'Payment details', 'Review your order'];
 
@@ -26,7 +27,7 @@ function getStepContent(step: number) {
         case 1:
             return <PaymentForm />;
         case 2:
-            return <Review />;
+            return <Review paymentDetails={new PaymentDetails('MasterCard', 'Amjad Aslan', 'xxxx-xxxx-xxxx-1234', '04/2024')} />;
         default:
             throw new Error('Unknown step');
     }
@@ -46,7 +47,7 @@ export default function Checkout() {
     };
 
     const secondaryButton = currentStep == 0 ?
-        <Button onClick={()=>{console.log("Supposed to go back to cart.")}} sx={{ mt: 3, ml: 1 }}>
+        <Button onClick={() => { console.log("Supposed to go back to cart.") }} sx={{ mt: 3, ml: 1 }}>
             Cancel
         </Button>
         :

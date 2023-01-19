@@ -4,10 +4,15 @@ import ProductPage from './Screens/ProductPage';
 import SignIn from './Screens/SignIn';
 import SignUp from './Screens/SignUp';
 import Cart from './Screens/Cart';
-import OldCheckout from './Screens/OldCheckout';
 import Checkout from './Screens/CheckoutScreen/Checkout';
+import React from 'react';
+
+
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = React.useState<boolean>(false);
+
+  
   return (
     <BrowserRouter>
       <nav>
@@ -17,7 +22,6 @@ function App() {
         <Link to="/catalog">Catalog</Link>
         <Link to="/productpage">ProductPage</Link>
         <Link to="/cart">Cart</Link>
-        <Link to="/oldcheckout">OldCheckout</Link>
         <Link to="/checkout">Checkout</Link>
       </nav>
       <Routes>
@@ -27,7 +31,6 @@ function App() {
         <Route path="/catalog" element={<Catalog />} />
         <Route path="/productpage" element={<ProductPage />} />
         <Route path="/cart" element={<Cart />} />
-        <Route path="/oldcheckout" element={<OldCheckout />} />
         <Route path="/checkout" element={<Checkout />} />
       </Routes>
     </BrowserRouter>

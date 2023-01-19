@@ -13,27 +13,35 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
+import { apiGatewayUrl } from './components/constants';
+import cookieParser from 'cookie-parser';
+
 
 const theme = createTheme();
-const apiGatewayUrl = process.env.ApiGatewayUrl || '//localhost:3000';
+
+axios.defaults.withCredentials = true;
 
 export default function SignIn() {
+
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
+        const username = data.get('username'), password = data.get('password');
+        if (username == '' || password == '') {
+            console.log('Please fill required fields');
+            return;
+        }
+
         await axios({
             method: 'POST',
             url: `${apiGatewayUrl}/api/user/login`,
             data: {
-                "username": data.get('username'),
-                "password": data.get('password')
+                "username": username,
+                "password": password
             }
         }).then(response => {
-            console.log({
-                email: data.get('username'),
-                password: data.get('password'),
-            });
-            console.log(response.data.token);
+            console.log(response);
+            console.log(response.headers['set-cookie'])
         }).catch((error) => {
             console.log(error);
         });
