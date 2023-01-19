@@ -1,6 +1,5 @@
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
-import { makeStyles, createStyles } from '@mui/styles';
 import { createTheme } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import { useNavigate } from 'react-router-dom';

@@ -1,24 +1,23 @@
 import {
     Grid, Card, CardContent, Typography, Button, makeStyles,
-} from '@material-ui/core';
+} from '@mui/material';
 import * as React from 'react';
 import { prodExample } from './Catalog';
 import EcommerceAppBar from './components/EcommerceAppBar';
 
-const useStyles = makeStyles((theme) => ({
-    card: {
-        marginBottom: theme.spacing(2),
-    },
-    checkoutCard: {
-        position: 'sticky',
-        top: theme.spacing(2),
-    },
-}));
+// const useStyles = makeStyles((theme) => ({
+//     card: {
+//         marginBottom: theme.spacing(2),
+//     },
+//     checkoutCard: {
+//         position: 'sticky',
+//         top: theme.spacing(2),
+//     },
+// }));
 
 export default function CartPage() {
     let cartItems = [new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample()]
 
-    const classes = useStyles();
     const [total, setTotal] = React.useState(0);
     React.useEffect(() => {
         let totalPrice = 0;
@@ -35,7 +34,7 @@ export default function CartPage() {
                 <Grid item xs={12} md={8}>
                     {cartItems.map((item) => (
                         <Grid item xs={12} key={item.id}>
-                            <Card className={classes.card}>
+                            <Card>
                                 <CardContent>
                                     <Typography variant="h5" component="h3">
                                         {item.name}
@@ -52,7 +51,7 @@ export default function CartPage() {
                     ))}
                 </Grid>
                 <Grid item xs={12} md={4}>
-                    <Card className={classes.checkoutCard}>
+                    <Card>
                         <CardContent>
                             <Typography variant="h5" component="h3">
                                 Total: ${total}

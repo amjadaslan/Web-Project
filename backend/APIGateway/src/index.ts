@@ -33,6 +33,8 @@ const verifyJWT = (token: string) => {
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
 const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
   let authHeader = req.headers["authorization"] as string;
+  let cookies = req.headers.cookie.split('; ');
+  console.log(cookies);
 
   // authorization header needs to look like that: Bearer <JWT>.
   // So, we just take to <JWT>.

@@ -14,8 +14,6 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
 import { apiGatewayUrl } from './components/constants';
-import cookieParser from 'cookie-parser';
-
 
 const theme = createTheme();
 
