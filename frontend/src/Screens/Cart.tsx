@@ -1,8 +1,10 @@
 import {
     Grid, Card, CardContent, Typography, Button, makeStyles,
 } from '@mui/material';
+import axios from 'axios';
 import * as React from 'react';
 import { prodExample } from './Catalog';
+import { apiGatewayUrl } from './components/constants';
 import EcommerceAppBar from './components/EcommerceAppBar';
 
 // const useStyles = makeStyles((theme) => ({
@@ -29,7 +31,7 @@ export default function CartPage() {
 
     return (
         <div>
-            <EcommerceAppBar/>
+            <EcommerceAppBar />
             <Grid container spacing={3}>
                 <Grid item xs={12} md={8}>
                     {cartItems.map((item) => (
@@ -56,7 +58,16 @@ export default function CartPage() {
                             <Typography variant="h5" component="h3">
                                 Total: ${total}
                             </Typography>
-                            <Button variant="contained" color="primary">
+                            <Button variant="contained" color="primary" onClick={async () => {
+                                await axios({
+                                    method: 'GET',
+                                    url: `${apiGatewayUrl}/api/product/all`
+                                }).then(response => {
+                                    console.log(response);
+                                }).catch((error) => {
+                                    console.log(error);
+                                });
+                            }}>
                                 Checkout
                             </Button>
                         </CardContent>

@@ -13,7 +13,10 @@ dotenv.config();
 // TODO: You need to config SERCRET_KEY in render.com dashboard, under Environment section.
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const apiGateway = express();
-const port = process.env.PORT || 3000;
+
+const port = process.env.PORT || 3005;
+
+const frontEndUrl = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000";
 const productServiceURL = process.env.PRODUCT_SERVICE_URL || "http://localhost:3001";
 const cartServiceURL = process.env.CART_SERVICE_URL || "http://localhost:3002";
 const orderServiceURL = process.env.ORDER_SERVICE_URL || "http://localhost:3003";
@@ -36,13 +39,8 @@ const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
   let cookies = req.headers.cookie.split('; ');
   console.log(cookies);
 
-  // authorization header needs to look like that: Bearer <JWT>.
-  // So, we just take to <JWT>.
-  // TODO: You need to validate it.
-  let authHeaderSplited = authHeader && authHeader.split(" ");
-  const token = authHeaderSplited && authHeaderSplited[1];
-
-  if (!token || authHeaderSplited[0] !== "Bearer") {
+  // We get the token value from cookies.
+  if (cookies.filter(str => str.startsWith("token")).length != 1) {
     res.statusCode = 401;
     res.end(
       JSON.stringify({
@@ -51,6 +49,7 @@ const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
     );
     return ERROR_401;
   }
+  const token = cookies.find(str => str.startsWith("token")).substring("token=".length);
 
   // Verify JWT token
   const user = verifyJWT(token);
@@ -73,7 +72,7 @@ apiGateway.use(cookieParser());
 //Alow cross origin requests
 //TODO: #13 Only allow cross origin from Front end url?
 apiGateway.use(cors({
-  origin: 'http://localhost:3001',
+  origin: frontEndUrl,
   credentials: true
 }))
 
@@ -125,7 +124,7 @@ apiGateway.use('/api/user', async (req, res) => {
     }).then(axiosResponse => {
       console.log('Cookie in axios:')
       console.log(axiosResponse.headers['set-cookie'])
-      
+
       console.log('res before:')
       console.log(res.getHeader('set-cookie'))
 
@@ -133,7 +132,7 @@ apiGateway.use('/api/user', async (req, res) => {
 
       console.log('res after:')
       console.log(res.getHeader('set-cookie'))
-      
+
       // Send the response back to the client
       res.status(axiosResponse.status).send(axiosResponse.data);
     });

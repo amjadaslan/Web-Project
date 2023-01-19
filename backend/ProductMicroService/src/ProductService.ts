@@ -52,6 +52,12 @@ class ProductService {
             await prod.delete();
         }
     }
+
+    //Gets all products from DB
+    async getAllProducts() {
+        const products = await Product.find({});
+        return products;
+    }
 }
 
 export default ProductService;
