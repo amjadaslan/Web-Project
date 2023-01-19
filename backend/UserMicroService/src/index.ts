@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import * as bcrypt from "bcrypt";
 import express from "express";
 import { DBUSERNAME, DBPASS } from "./const.js";
+import cors from 'cors';
 
 import UserService from "./userService.js";
 import mongoose from "mongoose";
@@ -23,6 +24,11 @@ if (!admin) {
 }
 
 app.use(bodyParser.json());
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}))
 
 app.post('/api/user/signup', function (req, res) { signupRoute(req, res); });
 
@@ -55,6 +61,7 @@ const getPermission = async (req: Request, res: Response, userId: string) => {
 
 //TODO: #10 Save token in a proper format (cookies)
 const loginRoute = async (req: Request, res: Response) => {
+  console.log("login");
   // Read request body.
   let credentials = req.body;
 
@@ -108,21 +115,23 @@ const loginRoute = async (req: Request, res: Response) => {
   const token = jwt.sign({ userId: user.userId }, secretKey, {
     expiresIn: 86400, // expires in 24 hours
   });
-  // /** check if this is right */
-  // res.cookie('token', token, {
-  //   httpOnly: true,
-  //   secure: true
-  // });
+  
+  /** check if this is right */
+  res.cookie('token', token, {
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+  });
 
   res.end(
-    JSON.stringify({
-      token: token,
-    })
-  );
-  // });
+    // JSON.stringify({
+    //   token: token,
+    // }
+    );
 };
 
 const signupRoute = async (req: Request, res: Response) => {
+  console.log('signup');
   let credentials = req.body;
 
   if (!credentials.username || !credentials.password) {
@@ -154,8 +163,11 @@ const signupRoute = async (req: Request, res: Response) => {
   const username = credentials.username;
   const password = await bcrypt.hash(credentials.password, 10);
 
+  const question = credentials.question;
+  const answer = await bcrypt.hash(credentials.answer, 10);
+
   try {
-    await userService.createUser({ username, password, permission: "U" });
+    await userService.createUser({ username, password, permission: "U", question, answer });
   } catch (err) {
     res.statusCode = 400;
     res.end();

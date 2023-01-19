@@ -5,6 +5,8 @@ import { ERROR_401 } from "./const.js";
 import axios, { AxiosResponse } from "axios";
 import bodyParser from "body-parser";
 import * as dotenv from "dotenv";
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -31,6 +33,8 @@ const verifyJWT = (token: string) => {
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
 const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
   let authHeader = req.headers["authorization"] as string;
+  let cookies = req.headers.cookie.split('; ');
+  console.log(cookies);
 
   // authorization header needs to look like that: Bearer <JWT>.
   // So, we just take to <JWT>.
@@ -64,17 +68,30 @@ const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
   return user;
 };
 
+apiGateway.use(cookieParser());
+
+//Alow cross origin requests
+//TODO: #13 Only allow cross origin from Front end url?
+apiGateway.use(cors({
+  origin: 'http://localhost:3001',
+  credentials: true
+}))
+
+
+
 apiGateway.use(bodyParser.json());
 apiGateway.use(async (req, res, next) => {
   console.log(req.url);
+  //Protected route is not relevant for login/signup requests, as no token exists.
   if (req.url === '/api/user/login' || req.url === '/api/user/signup') {
     next();
     return;
   }
+
   const user = protectedRout(req, res);
   let response: AxiosResponse;
   try {
-    response = await axios.get(`${userServiceURL}/api/user/${user.userId}/permission`);
+    response = await axios.get(`${userServiceURL}/api/user/${user.userId}/permission`, { withCredentials: true });
   } catch (err) {
     res.statusCode = 400;
     res.end();
@@ -96,17 +113,31 @@ apiGateway.use(async (req, res, next) => {
 
 //Call to UserMicroService
 apiGateway.use('/api/user', async (req, res) => {
+  console.log("user");
   try {
     // Make the request to the microservice
-    const response = await axios({
+    await axios({
       method: req.method,
       url: `${userServiceURL}/api/user${req.url}`,
       data: req.body,
-      params: req.params
+      params: req.params,
+      withCredentials: true
+    }).then(axiosResponse => {
+      console.log('Cookie in axios:')
+      console.log(axiosResponse.headers['set-cookie'])
+      
+      console.log('res before:')
+      console.log(res.getHeader('set-cookie'))
+
+      res.header('set-cookie', axiosResponse.headers['set-cookie'])
+
+      console.log('res after:')
+      console.log(res.getHeader('set-cookie'))
+      
+      // Send the response back to the client
+      res.status(axiosResponse.status).send(axiosResponse.data);
     });
 
-    // Send the response back to the client
-    res.status(response.status).send(response.data);
   } catch (err) {
     res.status(500).send(err);
   }

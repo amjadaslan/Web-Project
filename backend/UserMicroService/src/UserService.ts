@@ -23,9 +23,9 @@ class UserService {
     }
 
     //Creates a user and adds it to the DB
-    async createUser({ username, password, permission }) {
+    async createUser({ username, password, permission, question, answer }) {
 
-        const user = new User({ userId: uuidv4(), username, password, permission, cart: [] });
+        const user = new User({ userId: uuidv4(), username, password, permission, question, answer });
         await user.save();
     }
 
