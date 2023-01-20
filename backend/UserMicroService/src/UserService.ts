@@ -29,6 +29,13 @@ class UserService {
         await user.save();
     }
 
+    //Changes User's password [forgot password]
+    async changeUserPassword(userName: string, password: string) {
+        const userToUpdate = await User.findOne({ username: userName });
+        userToUpdate.password = password;
+        await userToUpdate.save();
+    }
+
     //Changes permission to the selected user
     async changeUserPermission(userName: string, permission: string) {
         const userToUpdate = await User.findOne({ username: userName });

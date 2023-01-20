@@ -21,15 +21,15 @@ class OrderService {
         return order;
     }
 
-    async createCoupon({value, total}){
-        const coupon = new Coupon({value: value,total:total});
+    async createCoupon({key, value}){
+        const coupon = new Coupon({key: key,value:value});
         await coupon.save();
         return coupon;
     }
 
-    async validateCoupon({value}){
-        const coupon = await Coupon.findOne({ value: value }).select('-__v -_id');
-        return coupon?coupon.total:-1;
+    async validateCoupon({key}){
+        const coupon = await Coupon.findOne({ key: key }).select('-__v -_id');
+        return coupon?coupon.value:-1;
     }
 
 }

@@ -170,6 +170,7 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
 
     //coupon if available
     const coupon = req.body.coupon;
+    let couponVal = await orderService.validateCoupon(coupon);
 
     let cartRes: AxiosResponse;
     cartRes = await axios.get(`${process.env.CART}/api/cart/${userId}`);
@@ -186,12 +187,12 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
         return;
       }
     }
-
+    
     const cc = req.body.cc;
     const holder = req.body.holder;
     const cvv = req.body.holder;
     const exp = req.body.exp;
-    const charge = req.body.charge;
+    const charge = couponVal === -1?cart.total:cart.total-couponVal;
 
     //TODO: #22 send payment request via api call to hammerheadprovider
     try{

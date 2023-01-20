@@ -120,6 +120,8 @@ app.post('/api/user/login', function (req:RequestWithPermission, res) { loginRou
 
 app.put('/api/user/permission', function (req:RequestWithPermission, res) { changePermission(req, res); });
 
+app.put('/api/user/password', function (req:RequestWithPermission, res){});
+
 app.get('/api/user/:userId/permission', function (req:RequestWithPermission, res) { getPermission(req, res, req.params.userId); });
 
 app.get('/api/user/:userId/username', function (req:RequestWithPermission, res) { getUsername(req, res, req.params.userId); });
@@ -263,6 +265,8 @@ const signupRoute = async (req: RequestWithPermission, res: Response) => {
     );
     return;
   }
+
+//TODO: #24 Replace salt with render env variable
   const username = credentials.username;
   const password = await bcrypt.hash(credentials.password, 10);
 
