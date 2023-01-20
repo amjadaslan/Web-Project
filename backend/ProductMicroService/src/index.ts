@@ -75,43 +75,32 @@ const getAllProducts = async (req: Request, res: Response, idOrType: string) => 
 
 
 const createProduct = async (req: Request, res: Response) => {
-    if (["A", "M"].includes(req.params.permission)) {
-        // Read request body.
-        let body = "";
-        req.on("data", (chunk) => {
-            body += chunk.toString();
-        });
-        req.on("end", async () => {
-            // Parse request body as JSON
-            try {
-                let { name, category, description, price, stock, image } = JSON.parse(body);
-                if (!name || !category || !description || !price || !stock || typeof price != 'number' || typeof stock != 'number' || !Number.isInteger(stock) || stock < 0 || price < 0 || price > 1000 || !validCategories.includes(category)) {
+    console.log(req.body);
+    if (["A", "M"].includes("A")) {
+        try {
+            let { name, category, description, price, stock, image } = req.body;
+            console.log(typeof stock);
+            if (!name || !category || !description || !price || !stock || typeof price != 'number' || typeof stock != 'number' || !Number.isInteger(stock) || stock < 0 || price < 0 || price > 1000 || !validCategories.includes(category)) {
 
-                    res.writeHead(400, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ message: 'Invalid Details' }));
-                    return;
-                }
-                let prodId;
-                try { prodId = await productService.createProduct({ name, category, description, price, stock, image }); } catch (err) {
-                    res.statusCode = 400;
-                    res.end();
-                    return;
-                }
-
-                res.statusCode = 201;
-                res.setHeader("Content-Type", "application/json");
-                res.end(JSON.stringify({ id: prodId }));
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ message: 'Invalid Details' }));
                 return;
-            } catch (err) {
+            }
+            let prodId;
+            try { prodId = await productService.createProduct({ name, category, description, price, stock, image }); } catch (err) {
                 res.statusCode = 400;
                 res.end();
                 return;
             }
-
-            // Mongoose will automatically insert this document to our collection!
-
-        });
-        return;
+            res.statusCode = 201;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ id: prodId }));
+            return;
+        } catch (err) {
+            res.statusCode = 400;
+            res.end();
+            return;
+        }
     }
     //No Authorization to change permission
     else {
@@ -129,7 +118,7 @@ const createProduct = async (req: Request, res: Response) => {
 
 //TODO: #8 replace parsing body manually with express body-parser
 const updateProduct = async (req: Request, res: Response, id: string) => {
-    if (["A", "M"].includes(req.params.permission)) {
+    if (["A", "M"].includes("A")) {
         let prod;
         try {
             prod = await productService.getProductById(id);
@@ -145,41 +134,32 @@ const updateProduct = async (req: Request, res: Response, id: string) => {
         }
         else {
             // Read request body.
-            let body = "";
-            req.on("data", (chunk) => {
-                body += chunk.toString();
-            });
-            req.on("end", async () => {
-                // Parse request body as JSON
-                try {
-                    JSON.parse(body);
-                } catch (err) {
-                    res.statusCode = 400;
-                    res.end();
-                    return;
-                }
-                const { name, category, description, price, stock, image } = JSON.parse(body);
-                if ((!name && !category && !description && !price && !stock && !image) ||
-                    typeof price != 'number' || typeof stock != 'number' || !Number.isInteger(stock) || stock < 0 || price < 0 || price > 1000 || !validCategories.includes(category)) {
-
-                    res.writeHead(400, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ message: 'Invalid Details' }));
-                    return;
-                }
-                try {
-                    await productService.updateProduct({ id, name, category, description, price, stock, image });
-                } catch (err) {
-                    res.statusCode = 400;
-                    res.end();
-                    return;
-                }
-
-                res.statusCode = 200;
-                res.setHeader("Content-Type", "application/json");
-                res.end(JSON.stringify({ id: id }));
+            try {
+                JSON.parse(req.body);
+            } catch (err) {
+                res.statusCode = 400;
+                res.end();
                 return;
+            }
+            const { name, category, description, price, stock, image } = req.body
+            if ((!name && !category && !description && !price && !stock && !image) ||
+                typeof price != 'number' || typeof stock != 'number' || !Number.isInteger(stock) || stock < 0 || price < 0 || price > 1000 || !validCategories.includes(category)) {
 
-            });
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ message: 'Invalid Details' }));
+                return;
+            }
+            try {
+                await productService.updateProduct({ id, name, category, description, price, stock, image });
+            } catch (err) {
+                res.statusCode = 400;
+                res.end();
+                return;
+            }
+
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ id: id }));
             return;
         }
     }
@@ -197,7 +177,7 @@ const updateProduct = async (req: Request, res: Response, id: string) => {
 
 const removeProduct = async (req: Request, res: Response, id: string) => {
 
-    if (req.params.permission == "A") {
+    if ("A" == "A") {
         try {
             await productService.removeProduct(id);
         } catch (err) {

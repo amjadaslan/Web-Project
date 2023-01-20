@@ -7,6 +7,7 @@ import Cart from './Screens/Cart';
 import Checkout from './Screens/CheckoutScreen/Checkout';
 import React, { useEffect, useState } from 'react';
 import { LoadingPage } from './HomePage';
+import BackOfficeProductsPage from './Screens/Backoffice/BackofficeProducts';
 
 
 
@@ -18,12 +19,13 @@ function App() {
     <BrowserRouter>
       <nav>
         <Link to="/">Home</Link>
-        <Link to="/signin">SignIn</Link>
-        <Link to="/signup">SignUp</Link>
-        <Link to="/catalog">Catalog</Link>
-        <Link to="/productpage">ProductPage</Link>
-        <Link to="/cart">Cart</Link>
-        <Link to="/checkout">Checkout</Link>
+        <Link to="/signin"> SignIn </Link>
+        <Link to="/signup"> SignUp </Link>
+        <Link to="/catalog"> Catalog </Link>
+        <Link to="/productpage"> ProductPage </Link>
+        <Link to="/cart"> Cart </Link>
+        <Link to="/checkout"> Checkout </Link>
+        <Link to="/backofficeproducts"> BackOfficeProducts </Link>
       </nav>
       <Routes>
         <Route path="/" element={<LoadingPage isLoading={isLoading} setIsLoading={setIsLoading} />} />
@@ -33,6 +35,7 @@ function App() {
         <Route path="/productpage" element={<ProductPage />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/backofficeproducts" element={<BackOfficeProductsPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>

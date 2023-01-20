@@ -14,12 +14,22 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
 import { apiGatewayUrl } from './components/constants';
+import { useNavigate } from 'react-router';
 
 const theme = createTheme();
 
 axios.defaults.withCredentials = true;
 
 export default function SignIn() {
+    const navigate = useNavigate();
+
+    // React.useEffect(() => {
+    //     const fetchData = async () => {
+    //         await new Promise(resolve => setTimeout(resolve, 2000));
+    //         navigate("/catalog");
+    //     }
+    //     fetchData();
+    // })
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -39,7 +49,8 @@ export default function SignIn() {
             }
         }).then(response => {
             console.log(response);
-            console.log(response.headers['set-cookie'])
+            navigate("/catalog");
+            
         }).catch((error) => {
             console.log(error);
         });
