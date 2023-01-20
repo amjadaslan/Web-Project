@@ -5,6 +5,7 @@ import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import { DBPASS, DBUSERNAME, ERROR_401 } from "./const.js";
 import ProductService from "./ProductService.js";
+import cors from 'cors';
 import axios, { AxiosResponse } from "axios";
 import cookieParser from 'cookie-parser';
 
@@ -17,6 +18,9 @@ const validCategories = ["t-shirt", "hoodie", "hat", "necklace", "bracelet", "sh
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const productService = new ProductService();
+
+const frontEndUrl = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000";
+const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3005";
 
 const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);
@@ -74,6 +78,11 @@ app.use(cookieParser());
 
 app.use(bodyParser.json());
 
+app.use(cors({
+    origin: apiGatewayUrl,
+    credentials: true
+}))
+
 app.use(async (req: RequestWithPermission, res, next) => {
 
     const user = protectedRout(req, res);
@@ -100,6 +109,9 @@ app.use(async (req: RequestWithPermission, res, next) => {
 });
 
 const port = 3001;
+
+app.get('/api/product/all', function (req: Request, res: Response) { getAllProducts(req, res, req.params.idorType); });
+
 app.get('/api/product/:idorType', function (req: RequestWithPermission, res: Response) { getProduct(req, res, req.params.idorType); });
 
 app.post('/api/product', function (req: RequestWithPermission, res: Response) { createProduct(req, res); });
@@ -136,6 +148,13 @@ const getProduct = async (req: Request, res: Response, idOrType: string) => {
     }
 
 };
+
+const getAllProducts = async (req: Request, res: Response, idOrType: string) => {
+    const products = await productService.getAllProducts();
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify(products));
+}
 
 
 const createProduct = async (req: RequestWithPermission, res: Response) => {
@@ -203,7 +222,7 @@ const updateProduct = async (req: RequestWithPermission, res: Response, id: stri
         else {
 
             try {
-                const { name, category, description, price, stock, image } = JSON.parse(req.body);
+                const { name, category, description, price, stock, image } = req.body;
                 if ((!name && !category && !description && !price && !stock && !image) ||
                     typeof price != 'number' || typeof stock != 'number' || !Number.isInteger(stock) || stock < 0 || price < 0 || price > 1000 || !validCategories.includes(category)) {
 
@@ -222,7 +241,6 @@ const updateProduct = async (req: RequestWithPermission, res: Response, id: stri
             res.setHeader("Content-Type", "application/json");
             res.end(JSON.stringify({ id: id }));
             return;
-
         }
     }
     else {//No Authorization to change permission

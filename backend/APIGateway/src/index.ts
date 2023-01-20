@@ -10,10 +10,15 @@ import cors from 'cors';
 
 dotenv.config();
 
+axios.defaults.withCredentials = true;
+
 // TODO: You need to config SERCRET_KEY in render.com dashboard, under Environment section.
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const apiGateway = express();
+
 const port = process.env.PORT || 3005;
+
+const frontEndUrl = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000";
 const productServiceURL = process.env.PRODUCT_SERVICE_URL || "http://localhost:3001";
 const cartServiceURL = process.env.CART_SERVICE_URL || "http://localhost:3002";
 const orderServiceURL = process.env.ORDER_SERVICE_URL || "http://localhost:3003";
@@ -34,7 +39,17 @@ const verifyJWT = (token: string) => {
 };
 
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
-const protectedRout = (req: Request, res: Response) => {
+const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
+  let authHeader = req.headers["authorization"] as string;
+  if (req.headers.cookie == undefined) {
+    res.statusCode = 401;
+    res.end(
+      JSON.stringify({
+        message: "No token or improper form.",
+      })
+    );
+    return ERROR_401;
+  }
   let cookies = req.headers.cookie.split('; ');
   console.log(cookies);
 
@@ -71,7 +86,7 @@ apiGateway.use(cookieParser());
 //Alow cross origin requests
 //TODO: #13 Only allow cross origin from Front end url?
 apiGateway.use(cors({
-  origin: 'http://localhost:3000',
+  origin: frontEndUrl,
   credentials: true
 }))
 

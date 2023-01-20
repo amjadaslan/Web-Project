@@ -150,7 +150,6 @@ app.delete('/api/cart/:userid', function (req: RequestWithId_Permission, res: Re
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
-
 //TODO: #7 Add try\catch to all functions using mongoose methods
 
 //Retrieves the cart of the specified user.

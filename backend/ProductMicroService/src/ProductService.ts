@@ -5,6 +5,7 @@ class ProductService {
 
     //Creates a product and saves it within the DB
     async createProduct({ name, category, description, price, stock, image }) {
+        console.log("create");
         const product = new Product({
             id: uuidv4(),
             name: name,
@@ -51,6 +52,12 @@ class ProductService {
         if (prod) {
             await prod.delete();
         }
+    }
+
+    //Gets all products from DB
+    async getAllProducts() {
+        const products = await Product.find({});
+        return products;
     }
 }
 
