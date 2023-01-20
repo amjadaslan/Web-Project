@@ -1,4 +1,4 @@
-import express,{Request,Response} from "express";
+import express, { Request, Response } from "express";
 import { IncomingMessage, ServerResponse } from "http";
 import jwt from "jsonwebtoken";
 import { ERROR_401 } from "./const.js";
@@ -40,7 +40,6 @@ const verifyJWT = (token: string) => {
 
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
 const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
-  let authHeader = req.headers["authorization"] as string;
   if (req.headers.cookie == undefined) {
     res.statusCode = 401;
     res.end(
@@ -104,6 +103,10 @@ const connect = async (serviceType: string, serviceURL: string) => {
         data: req.body,
         headers: req.headers
       });
+
+      if (serviceURL == 'user/login') {
+        res.header('set-cookie', response.headers['set-cookie'])
+      }
 
       // Send the response back to the client
       res.status(response.status).send(response.data);

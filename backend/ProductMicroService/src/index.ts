@@ -9,6 +9,9 @@ import cors from 'cors';
 import axios, { AxiosResponse } from "axios";
 import cookieParser from 'cookie-parser';
 
+
+axios.defaults.withCredentials = true;
+
 interface RequestWithPermission extends Request {
     permission: string;
 }
@@ -38,6 +41,15 @@ const verifyJWT = (token: string) => {
 
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
 const protectedRout = (req: Request, res: Response) => {
+    if (req.headers.cookie == undefined) {
+        res.statusCode = 401;
+        res.end(
+            JSON.stringify({
+                message: "No token or improper form.",
+            })
+        );
+        return ERROR_401;
+    }
     let cookies = req.headers.cookie.split('; ');
     console.log(cookies);
 
@@ -55,6 +67,7 @@ const protectedRout = (req: Request, res: Response) => {
 
     // Verify JWT token
     const user = verifyJWT(token);
+    console.log(`my name is ${user}`)
     if (!user) {
         res.statusCode = 401;
         res.end(
@@ -86,25 +99,22 @@ app.use(cors({
 app.use(async (req: RequestWithPermission, res, next) => {
 
     const user = protectedRout(req, res);
-    let response: AxiosResponse;
-    try {
-        response = await axios.get(`${userServiceURL}/api/user/${user.userId}/permission`, { withCredentials: true });
-    } catch (err) {
-        res.statusCode = 400;
-        res.end();
-        return;
-    }
     if (user != ERROR_401) {
-        req.permission = response.data;
-        next();
-    }
-    else {
-        res.statusCode = 401;
-        res.end(
-            JSON.stringify({
-                message: "Unauthenticated user",
+
+        await axios
+            .get(`${userServiceURL}/api/user/${user.userId}/permission`, {
+                data: req.body,
+                headers: req.headers
+            }).then(response => {
+                console.log(response)
+                req.permission = response.data;
+                next();
             })
-        );
+            .catch((error) => {
+                res.statusCode = 500;
+                res.end();
+                return;
+            });
     }
 });
 
