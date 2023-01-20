@@ -6,6 +6,8 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { prodExample } from './Catalog';
 
 import EcommerceAppBar from './components/EcommerceAppBar';
+import axios from 'axios';
+import { apiGatewayUrl } from './components/constants';
 
 // const useStyles = makeStyles({
 //     card: {
@@ -26,6 +28,8 @@ import EcommerceAppBar from './components/EcommerceAppBar';
 // });
 
 export default function ProductPage() {
+    axios.defaults.withCredentials = true
+
     let product = new prodExample();
 
     return (
@@ -61,6 +65,10 @@ export default function ProductPage() {
                                 variant="contained"
                                 color="primary"
                                 startIcon={<AddShoppingCartIcon />}
+                                //name, category, description, price, stock, image
+                                onClick={async () => {
+                                    console.log('lol')
+                                }}
                             >
                                 Add to cart
                             </Button>

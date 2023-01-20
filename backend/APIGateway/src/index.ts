@@ -36,6 +36,15 @@ const verifyJWT = (token: string) => {
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
 const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
   let authHeader = req.headers["authorization"] as string;
+  if (req.headers.cookie == undefined) {
+    res.statusCode = 401;
+    res.end(
+      JSON.stringify({
+        message: "No token or improper form.",
+      })
+    );
+    return ERROR_401;
+  }
   let cookies = req.headers.cookie.split('; ');
   console.log(cookies);
 
@@ -91,13 +100,14 @@ apiGateway.use(async (req, res, next) => {
   let response: AxiosResponse;
   try {
     response = await axios.get(`${userServiceURL}/api/user/${user.userId}/permission`, { withCredentials: true });
+    console.log(response.data)
   } catch (err) {
     res.statusCode = 400;
     res.end();
     return;
   }
   if (user != ERROR_401) {
-    req.params.permission = response.data;
+    //req.body.permission = response.data.permission;
     next();
   }
   else {
@@ -180,18 +190,25 @@ apiGateway.use('/api/order', async (req, res) => {
 
 //Call to ProductMicroService
 apiGateway.use('/api/product', async (req, res) => {
+  console.log(req.body)
   try {
     // Make the request to the microservice
+    console.log('a')
     const response = await axios({
       method: req.method,
       url: `${productServiceURL}/api/product${req.url}`,
       data: req.body,
-      headers: req.headers
+      headers: req.headers,
+      withCredentials: true
     });
+    console.log('b');
+    console.log(response);
 
     // Send the response back to the client
     res.status(response.status).send(response.data);
   } catch (err) {
+    console.log('c')
+    console.log(err);
     res.status(500).send(err);
   }
 });

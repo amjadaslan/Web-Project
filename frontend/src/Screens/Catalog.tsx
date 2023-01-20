@@ -8,6 +8,10 @@ import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
 import EcommerceAppBar from './components/EcommerceAppBar';
+import { useNavigate } from 'react-router';
+import { Product } from '../Models/Product';
+import axios from 'axios';
+import { apiGatewayUrl } from './components/constants';
 
 const theme = createTheme();
 
@@ -30,7 +34,30 @@ export class prodExample {
 // );
 
 export default function Catalog() {
-  let products = [new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample()]
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const fetchProducts = async () => {
+      await axios({
+        method: 'GET',
+        url: `${apiGatewayUrl}/api/product/all`
+      }).then(response => {
+        console.log(response.data);
+        setAllProducts(response.data.map((obj: { id: string, type: string; name: string; category: string; description: string; price: number; stock: number; image: string; }) => new Product(obj.id, obj.type, obj.name, obj.category, obj.description, obj.price, obj.stock, obj.image)));
+      }).catch((error) => {
+        console.log(error);
+      });
+
+      // await new Promise(resolve => setTimeout(resolve, 1000));
+      // navigate("cart");
+    }
+    fetchProducts();
+  }, []);
+
+  const [allProducts, setAllProducts] = React.useState<Product[]>([]);
+
+
+  let products = allProducts;
 
   return (
     <div>
@@ -41,13 +68,13 @@ export default function Catalog() {
             <Grid item xs={3} key={Math.random() as React.Key}>
               <Card>
                 <CardMedia
-                  image={product.image}
+                  image={product.imageUrl}
                   title={product.name}
                   style={{ height: '150px' }}
                 />
                 <CardContent>
                   <Typography variant="h5" component="h2">
-                    {product.name}
+                    {product.name}  |  {product.price}$ | Stock: {product.stock}
                   </Typography>
                   <Typography gutterBottom variant="body2" color="textSecondary" component="p">
                     {product.category}

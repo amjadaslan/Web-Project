@@ -5,6 +5,7 @@ class ProductService {
 
     //Creates a product and saves it within the DB
     async createProduct({ name, category, description, price, stock, image }) {
+        console.log("create");
         const product = new Product({
             id: uuidv4(),
             name: name,
