@@ -15,6 +15,13 @@ const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);
 
+
+
+interface RequestWithId_Permission extends Request {
+    permission: string;
+    actualId: string;
+  }
+
 const app = express();
 
 app.use(bodyParser.json());
@@ -65,7 +72,7 @@ const protectedRout = (req: Request, res: Response) => {
     return user;
 };
 
-app.use(async (req, res, next) => {
+app.use(async (req:RequestWithId_Permission, res, next) => {
 
     const user = protectedRout(req, res);
     let response: AxiosResponse;
@@ -77,8 +84,8 @@ app.use(async (req, res, next) => {
         return;
     }
     if (user != ERROR_401) {
-        req.params.permission = response.data;
-        req.params.actualId = user.userId;
+        req.permission = response.data;
+        req.actualId = user.userId;
         next();
     }
     else {
@@ -93,8 +100,8 @@ app.use(async (req, res, next) => {
 
 
 const port = 3002;
-app.get('/api/cart/:userid', function (req: Request, res: Response) {
-    if (req.params.actualId !== req.params.userid && !['A', 'M', 'W'].includes(req.params.permission)) {
+app.get('/api/cart/:userid', function (req: RequestWithId_Permission, res: Response) {
+    if (req.actualId !== req.params.userid && !['A', 'M', 'W'].includes(req.permission)) {
         res.statusCode = 403;
         res.end(
             JSON.stringify({
@@ -105,8 +112,8 @@ app.get('/api/cart/:userid', function (req: Request, res: Response) {
     } else { getCart(req, res, req.params.userid); }
 });
 
-app.post('/api/cart/:userid', function (req: Request, res: Response) {
-    if (req.params.actualId !== req.params.userid) {
+app.post('/api/cart/:userid', function (req: RequestWithId_Permission, res: Response) {
+    if (req.actualId !== req.params.userid) {
         res.statusCode = 403;
         res.end(
             JSON.stringify({
@@ -117,8 +124,8 @@ app.post('/api/cart/:userid', function (req: Request, res: Response) {
     } else { addToCart(req, res, req.params.userid); }
 });
 
-app.put('/api/cart/:userid', function (req: Request, res: Response) {
-    if (req.params.actualId !== req.params.userid) {
+app.put('/api/cart/:userid', function (req: RequestWithId_Permission, res: Response) {
+    if (req.actualId !== req.params.userid) {
         res.statusCode = 403;
         res.end(
             JSON.stringify({
@@ -129,8 +136,8 @@ app.put('/api/cart/:userid', function (req: Request, res: Response) {
     } else { updateCartItem(req, res, req.params.userid); }
 });
 
-app.delete('/api/cart/:userid', function (req: Request, res: Response) {
-    if (req.params.actualId !== req.params.userid && !['A', 'M', 'W'].includes(req.params.permission)) {
+app.delete('/api/cart/:userid', function (req: RequestWithId_Permission, res: Response) {
+    if (req.actualId !== req.params.userid && !['A', 'M', 'W'].includes(req.permission)) {
         res.statusCode = 403;
         res.end(
             JSON.stringify({

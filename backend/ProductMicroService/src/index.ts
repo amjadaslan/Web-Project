@@ -8,6 +8,10 @@ import ProductService from "./ProductService.js";
 import axios, { AxiosResponse } from "axios";
 import cookieParser from 'cookie-parser';
 
+interface RequestWithPermission extends Request {
+    permission: string;
+}
+
 const validCategories = ["t-shirt", "hoodie", "hat", "necklace", "bracelet", "shoes", "pillow", "mug", "book", "puzzle", "cards"];
 
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
@@ -32,35 +36,35 @@ const verifyJWT = (token: string) => {
 const protectedRout = (req: Request, res: Response) => {
     let cookies = req.headers.cookie.split('; ');
     console.log(cookies);
-  
+
     // We get the token value from cookies.
     if (cookies.filter(str => str.startsWith("token")).length != 1) {
-      res.statusCode = 401;
-      res.end(
-        JSON.stringify({
-          message: "No token or improper form.",
-        })
-      );
-      return ERROR_401;
+        res.statusCode = 401;
+        res.end(
+            JSON.stringify({
+                message: "No token or improper form.",
+            })
+        );
+        return ERROR_401;
     }
     const token = cookies.find(str => str.startsWith("token")).substring("token=".length);
-  
+
     // Verify JWT token
     const user = verifyJWT(token);
     if (!user) {
-      res.statusCode = 401;
-      res.end(
-        JSON.stringify({
-          message: "Failed to verify JWT.",
-        })
-      );
-      return ERROR_401;
+        res.statusCode = 401;
+        res.end(
+            JSON.stringify({
+                message: "Failed to verify JWT.",
+            })
+        );
+        return ERROR_401;
     }
-  
+
     // We are good!
     return user;
-  };
-  
+};
+
 
 
 const app = express();
@@ -70,7 +74,7 @@ app.use(cookieParser());
 
 app.use(bodyParser.json());
 
-app.use(async (req, res, next) => {
+app.use(async (req: RequestWithPermission, res, next) => {
 
     const user = protectedRout(req, res);
     let response: AxiosResponse;
@@ -82,7 +86,7 @@ app.use(async (req, res, next) => {
         return;
     }
     if (user != ERROR_401) {
-        req.params.permission = response.data;
+        req.permission = response.data;
         next();
     }
     else {
@@ -96,13 +100,13 @@ app.use(async (req, res, next) => {
 });
 
 const port = 3001;
-app.get('/api/product/:idorType', function (req: Request, res: Response) { getProduct(req, res, req.params.idorType); });
+app.get('/api/product/:idorType', function (req: RequestWithPermission, res: Response) { getProduct(req, res, req.params.idorType); });
 
-app.post('/api/product', function (req: Request, res: Response) { createProduct(req, res); });
+app.post('/api/product', function (req: RequestWithPermission, res: Response) { createProduct(req, res); });
 
-app.put('/api/product/:id', function (req: Request, res: Response) { updateProduct(req, res, req.params.id); });
+app.put('/api/product/:id', function (req: RequestWithPermission, res: Response) { updateProduct(req, res, req.params.id); });
 
-app.delete('/api/product/:id', function (req: Request, res: Response) { removeProduct(req, res, req.params.id); });
+app.delete('/api/product/:id', function (req: RequestWithPermission, res: Response) { removeProduct(req, res, req.params.id); });
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
@@ -134,8 +138,8 @@ const getProduct = async (req: Request, res: Response, idOrType: string) => {
 };
 
 
-const createProduct = async (req: Request, res: Response) => {
-    if (["A", "M"].includes(req.params.permission)) {
+const createProduct = async (req: RequestWithPermission, res: Response) => {
+    if (["A", "M"].includes(req.permission)) {
         // Parse request body as JSON
         try {
             let { name, category, description, price, stock, image } = JSON.parse(req.body);
@@ -181,8 +185,8 @@ const createProduct = async (req: Request, res: Response) => {
 
 
 //TODO: #8 replace parsing body manually with express body-parser
-const updateProduct = async (req: Request, res: Response, id: string) => {
-    if (["A", "M"].includes(req.params.permission)) {
+const updateProduct = async (req: RequestWithPermission, res: Response, id: string) => {
+    if (["A", "M"].includes(req.permission)) {
         let prod;
         try {
             prod = await productService.getProductById(id);
@@ -233,9 +237,9 @@ const updateProduct = async (req: Request, res: Response, id: string) => {
 
 };
 
-const removeProduct = async (req: Request, res: Response, id: string) => {
+const removeProduct = async (req: RequestWithPermission, res: Response, id: string) => {
 
-    if (req.params.permission == "A") {
+    if (req.permission == "A") {
         try {
             await productService.removeProduct(id);
         } catch (err) {

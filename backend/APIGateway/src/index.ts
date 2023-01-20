@@ -71,44 +71,13 @@ apiGateway.use(cookieParser());
 //Alow cross origin requests
 //TODO: #13 Only allow cross origin from Front end url?
 apiGateway.use(cors({
-  origin: 'http://localhost:3001',
+  origin: 'http://localhost:3000',
   credentials: true
 }))
 
 
 
 apiGateway.use(bodyParser.json());
-apiGateway.use(async (req, res, next) => {
-  console.log(req.url);
-  //Protected route is not relevant for login/signup requests, as no token exists.
-  if (req.url === '/api/user/login' || req.url === '/api/user/signup') {
-    next();
-    return;
-  }
-
-  const user = protectedRout(req, res);
-  let response: AxiosResponse;
-  try {
-    response = await axios.get(`${userServiceURL}/api/user/${user.userId}/permission`, { withCredentials: true });
-  } catch (err) {
-    res.statusCode = 400;
-    res.end();
-    return;
-  }
-  if (user != ERROR_401) {
-    req.params.permission = response.data;
-    next();
-  }
-  else {
-    res.statusCode = 401;
-    res.end(
-      JSON.stringify({
-        message: "Unauthenticated user",
-      })
-    );
-  }
-});
-
 
 const connect = async (serviceType: string, serviceURL: string) => {
   apiGateway.use(`/api/${serviceType}`, async (req, res) => {

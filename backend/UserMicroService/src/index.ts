@@ -20,6 +20,10 @@ const userService = new UserService();
 const app = express();
 const port = 3004;
 
+interface RequestWithPermission extends Request {
+  permission: string;
+}
+
 // Verify JWT token
 const verifyJWT = (token: string) => {
   try {
@@ -75,11 +79,11 @@ if (!admin) {
 app.use(bodyParser.json());
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'http://localhost:3005',
   credentials: true
 }));
 
-app.use(async (req, res, next) => {
+app.use(async (req: RequestWithPermission, res, next) => {
   console.log(req.url);
   //Protected route is not relevant for login/signup requests, as no token exists.
   if (req.url === '/api/user/login' || req.url === '/api/user/signup') {
@@ -97,7 +101,7 @@ app.use(async (req, res, next) => {
     return;
   }
   if (userData != ERROR_401) {
-    req.params.permission = userData.permission;
+    req.permission = userData.permission;
     next();
   }
   else {
@@ -110,17 +114,19 @@ app.use(async (req, res, next) => {
   }
 });
 
-app.post('/api/user/signup', function (req, res) { signupRoute(req, res); });
+app.post('/api/user/signup', function (req:RequestWithPermission, res) { signupRoute(req, res); });
 
-app.post('/api/user/login', function (req, res) { loginRoute(req, res); });
+app.post('/api/user/login', function (req:RequestWithPermission, res) { loginRoute(req, res); });
 
-app.put('/api/user/permission', function (req, res) { changePermission(req, res); });
+app.put('/api/user/permission', function (req:RequestWithPermission, res) { changePermission(req, res); });
 
-app.get('/api/user/:userId/permission', function (req, res) { getPermission(req, res, req.params.userId); });
+app.get('/api/user/:userId/permission', function (req:RequestWithPermission, res) { getPermission(req, res, req.params.userId); });
+
+app.get('/api/user/:userId/username', function (req:RequestWithPermission, res) { getUsername(req, res, req.params.userId); });
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
-const getPermission = async (req: Request, res: Response, userId: string) => {
+const getPermission = async (req: RequestWithPermission, res: Response, userId: string) => {
   console.log(userId);
   let user;
   try {
@@ -139,8 +145,26 @@ const getPermission = async (req: Request, res: Response, userId: string) => {
   );
 }
 
+const getUsername = async (req: Request, res: Response, userId: string) => {
+  let user;
+  try {
+    user = await userService.getUser(userId);
+  } catch (err) {
+    res.statusCode = 400;
+    res.end();
+    return;
+  }
+  res.statusCode = 200;
+  res.end(
+    JSON.stringify({
+      username:
+        user.username
+    })
+  );
+}
+
 //TODO: #10 Save token in a proper format (cookies)
-const loginRoute = async (req: Request, res: Response) => {
+const loginRoute = async (req: RequestWithPermission, res: Response) => {
   console.log("login");
   // Read request body.
   let credentials = req.body;
@@ -210,10 +234,9 @@ const loginRoute = async (req: Request, res: Response) => {
     );
 };
 
-const signupRoute = async (req: Request, res: Response) => {
+const signupRoute = async (req: RequestWithPermission, res: Response) => {
   console.log('signup');
-  let credentials = req.body;
-
+  let credentials = req.body; 
   if (!credentials.username || !credentials.password) {
     res.statusCode = 400;
     res.end(
@@ -263,8 +286,8 @@ const signupRoute = async (req: Request, res: Response) => {
   // });
 };
 
-const changePermission = async (req: Request, res: Response) => {
-  if (req.params.permission == "A") {
+const changePermission = async (req: RequestWithPermission, res: Response) => {
+  if (req.permission == "A") {
     // Read request body.
     let credentials = req.body;
     if (!credentials.username || !credentials.permission || !["W", "M"].includes(credentials.permission)) {
