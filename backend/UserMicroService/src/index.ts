@@ -2,12 +2,14 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import * as bcrypt from "bcrypt";
 import express from "express";
-import { DBUSERNAME, DBPASS } from "./const.js";
+import { DBUSERNAME, DBPASS, ERROR_401} from "./const.js";
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 import UserService from "./userService.js";
-import mongoose from "mongoose";
+import mongoose, { RootQuerySelector } from "mongoose";
 import bodyParser from "body-parser";
+import axios, { AxiosResponse } from "axios";
 
 const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);
@@ -17,6 +19,53 @@ const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const userService = new UserService();
 const app = express();
 const port = 3004;
+
+// Verify JWT token
+const verifyJWT = (token: string) => {
+  try {
+    return jwt.verify(token, secretKey);
+    // Read more here: https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
+    // Read about the diffrence between jwt.verify and jwt.decode.
+  } catch (err) {
+    return false;
+  }
+};
+
+// Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
+const protectedRout = (req: Request, res: Response) => {
+  let cookies = req.headers.cookie.split('; ');
+  console.log(cookies);
+
+  // We get the token value from cookies.
+  if (cookies.filter(str => str.startsWith("token")).length != 1) {
+    res.statusCode = 401;
+    res.end(
+      JSON.stringify({
+        message: "No token or improper form.",
+      })
+    );
+    return ERROR_401;
+  }
+  const token = cookies.find(str => str.startsWith("token")).substring("token=".length);
+
+  // Verify JWT token
+  const user = verifyJWT(token);
+  if (!user) {
+    res.statusCode = 401;
+    res.end(
+      JSON.stringify({
+        message: "Failed to verify JWT.",
+      })
+    );
+    return ERROR_401;
+  }
+
+  // We are good!
+  return user;
+};
+
+app.use(cookieParser());
+
 
 const admin = await userService.getUserByUsername("admin");
 if (!admin) {
@@ -28,7 +77,38 @@ app.use(bodyParser.json());
 app.use(cors({
   origin: 'http://localhost:3000',
   credentials: true
-}))
+}));
+
+app.use(async (req, res, next) => {
+  console.log(req.url);
+  //Protected route is not relevant for login/signup requests, as no token exists.
+  if (req.url === '/api/user/login' || req.url === '/api/user/signup') {
+    next();
+    return;
+  }
+
+  const userRes = protectedRout(req, res);
+  let userData;
+  try {
+    userData = await userService.getUser(userRes.userId);
+  } catch (err) {
+    res.statusCode = 400;
+    res.end();
+    return;
+  }
+  if (userData != ERROR_401) {
+    req.params.permission = userData.permission;
+    next();
+  }
+  else {
+    res.statusCode = 401;
+    res.end(
+      JSON.stringify({
+        message: "Unauthenticated user",
+      })
+    );
+  }
+});
 
 app.post('/api/user/signup', function (req, res) { signupRoute(req, res); });
 
