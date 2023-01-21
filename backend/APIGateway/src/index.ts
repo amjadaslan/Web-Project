@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { IncomingMessage, ServerResponse } from "http";
 import jwt from "jsonwebtoken";
 import { ERROR_401 } from "./const.js";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import bodyParser from "body-parser";
 import * as dotenv from "dotenv";
 import cookieParser from 'cookie-parser';
@@ -97,6 +97,7 @@ const connect = async (serviceType: string, serviceURL: string) => {
   apiGateway.use(`/api/${serviceType}`, async (req, res) => {
     try {
       console.log(req.url);
+      console.log(`${serviceURL}/api/${serviceType}${req.url}`)
       // Make the request to the microservice
       const response = await axios({
         method: req.method,

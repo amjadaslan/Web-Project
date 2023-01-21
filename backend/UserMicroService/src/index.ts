@@ -39,6 +39,7 @@ const verifyJWT = (token: string) => {
 
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
 const protectedRout = (req: Request, res: Response) => {
+  console.log(req.headers.cookie);
   if (req.headers.cookie == undefined) {
     res.statusCode = 401;
     res.end(
@@ -65,7 +66,7 @@ const protectedRout = (req: Request, res: Response) => {
 
   // Verify JWT token
   const user = verifyJWT(token);
-  console.log(`my name is ${user}`)
+  console.log(`my name is ${user.userId}`)
   if (!user) {
     res.statusCode = 401;
     res.end(
@@ -91,21 +92,20 @@ if (!admin) {
 app.use(bodyParser.json());
 
 app.use(cors({
-  origin: apiGatewayUrl,
+  origin: '*',
   credentials: true
 }));
 
 app.use(async (req: RequestWithPermission, res, next) => {
   console.log(req.url);
   //Protected route is not relevant for login/signup/forgot_password requests, as no token exists.
-  if ( ['/api/user/:username/answer','/api/user/login','/api/user/signup','/api/user/:username/question' ].includes(req.url)) {
+  if (['/api/user/:username/answer', '/api/user/login', '/api/user/signup', '/api/user/:username/question'].includes(req.url)) {
     next();
     return;
   }
 
   const userRes = protectedRout(req, res);
   if (userRes != ERROR_401) {
-    //req.permission = userData.permission;
     await userService
       .getUser(userRes.userId).then((userData) => {
         req.permission = userData.permission;
@@ -164,14 +164,21 @@ const validateQuestion_ChangePassword = async (req: RequestWithPermission, res: 
     return;
   }
   let answer = req.body.answer;
-  if (answer !== user.answer) {
+  const answerMatch = await bcrypt.compare(
+    answer,
+    user.answer
+  );
+  if (!answerMatch) {
     res.statusCode = 400;
     res.end(JSON.stringify({
       message: "Wrong Answer!",
     }));
   }
   else {
-    try { await userService.changeUserPassword(username, req.body.newPassword); }
+    try {
+      let pass = await bcrypt.hash(req.body.newPassword, 10);
+      await userService.changeUserPassword(username, pass);
+    }
     catch (err) {
       res.statusCode = 500;
       res.end();
@@ -184,7 +191,6 @@ const validateQuestion_ChangePassword = async (req: RequestWithPermission, res: 
 }
 
 const getPermission = async (req: RequestWithPermission, res: Response, userId: string) => {
-  console.log(userId);
   let user;
   try {
     user = await userService.getUser(userId);
@@ -329,8 +335,10 @@ const signupRoute = async (req: RequestWithPermission, res: Response) => {
   const password = await bcrypt.hash(credentials.password, 10);
 
   const question = credentials.question;
-  const answer = await bcrypt.hash(credentials.answer, 10);
-
+  let answer;
+  if (credentials.answer) {
+    answer = await bcrypt.hash(credentials.answer, 10);
+  }
   try {
     await userService.createUser({ username, password, permission: "U", question, answer });
   } catch (err) {
@@ -349,10 +357,11 @@ const signupRoute = async (req: RequestWithPermission, res: Response) => {
 };
 
 const changePermission = async (req: RequestWithPermission, res: Response) => {
+  console.log("Changing Permission..")
   if (req.permission == "A") {
     // Read request body.
     let credentials = req.body;
-    if (!credentials.username || !credentials.permission || !["W", "M"].includes(credentials.permission)) {
+    if (!credentials.username || !credentials.permission || !["W", "M", "U"].includes(credentials.permission)) {
       res.statusCode = 400;
       res.end(JSON.stringify({ message: "Missing permission or username" }));
       return;
