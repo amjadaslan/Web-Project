@@ -81,7 +81,7 @@ app.use(async (req: RequestWithPermission_userId, res, next) => {
     return;
   }
   if (user != ERROR_401) {
-    req.permission = response.data;
+    req.permission = response.data.permission;
     req.userId = user.userId;
     next();
   }

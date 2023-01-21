@@ -84,7 +84,7 @@ app.use(async (req:RequestWithId_Permission, res, next) => {
         return;
     }
     if (user != ERROR_401) {
-        req.permission = response.data;
+        req.permission = response.data.permission;
         req.actualId = user.userId;
         next();
     }

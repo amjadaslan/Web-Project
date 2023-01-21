@@ -51,7 +51,6 @@ const protectedRout = (req: Request, res: Response) => {
         return ERROR_401;
     }
     let cookies = req.headers.cookie.split('; ');
-    console.log(cookies);
 
     // We get the token value from cookies.
     if (cookies.filter(str => str.startsWith("token")).length != 1) {
@@ -106,8 +105,7 @@ app.use(async (req: RequestWithPermission, res, next) => {
                 data: req.body,
                 headers: req.headers
             }).then(response => {
-                console.log(response)
-                req.permission = response.data;
+                req.permission = response.data.permission;
                 next();
             })
             .catch((error) => {
@@ -168,10 +166,13 @@ const getAllProducts = async (req: Request, res: Response, idOrType: string) => 
 
 
 const createProduct = async (req: RequestWithPermission, res: Response) => {
+    console.log('Creating a product');
+    console.log(req.permission);
     if (["A", "M"].includes(req.permission)) {
         // Parse request body as JSON
         try {
-            let { name, category, description, price, stock, image } = JSON.parse(req.body);
+            let { name, category, description, price, stock, image } = req.body;
+            console.log(req.body);
             if (!name || !category || !description || !price || !stock || typeof price != 'number' || typeof stock != 'number' || !Number.isInteger(stock) || stock < 0 || price < 0 || price > 1000 || !validCategories.includes(category)) {
 
                 res.writeHead(400, { 'Content-Type': 'application/json' });

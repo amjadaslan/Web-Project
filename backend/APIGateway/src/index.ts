@@ -96,6 +96,7 @@ apiGateway.use(bodyParser.json());
 const connect = async (serviceType: string, serviceURL: string) => {
   apiGateway.use(`/api/${serviceType}`, async (req, res) => {
     try {
+      console.log(req.url);
       // Make the request to the microservice
       const response = await axios({
         method: req.method,
@@ -104,7 +105,7 @@ const connect = async (serviceType: string, serviceURL: string) => {
         headers: req.headers
       });
 
-      if (serviceURL == 'user/login') {
+      if (req.url == '/login') {
         res.header('set-cookie', response.headers['set-cookie'])
       }
 
