@@ -7,7 +7,7 @@ import { Grid, List, ListItem, TextField } from '@mui/material';
 import axios from 'axios';
 import { apiGatewayUrl } from '../components/constants';
 import { Product } from '../../Models/Product';
-import EcommerceAppBar from '../components/EcommerceAppBar';
+import {EcommerceAppBar} from '../components/EcommerceAppBar';
 
 axios.defaults.withCredentials = true;
 
@@ -150,7 +150,7 @@ export default function BackOfficeProductsPage() {
                 url: `${apiGatewayUrl}/api/product/all`
             }).then(response => {
                 console.log(response.data);
-                setAllProducts(response.data.map((obj: { id: string, type: string; name: string; category: string; description: string; price: number; stock: number; image: string; }) => new Product(obj.id, obj.type, obj.name, obj.category, obj.description, obj.price, obj.stock, obj.image)));
+                setAllProducts(response.data.map((obj: any) => obj as Product));
             }).catch((error) => {
                 console.log(error);
             });
@@ -178,7 +178,7 @@ export default function BackOfficeProductsPage() {
 
     return (
         <div>
-            <EcommerceAppBar />
+            <EcommerceAppBar appBarTitle='Backoffice Products'/>
             <Typography variant="subtitle1" component="div">
                 Product: {selectedValue}
             </Typography>

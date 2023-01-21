@@ -5,7 +5,7 @@ import {
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { prodExample } from './Catalog';
 
-import EcommerceAppBar from './components/EcommerceAppBar';
+import {EcommerceAppBar} from './components/EcommerceAppBar';
 import axios from 'axios';
 import { apiGatewayUrl } from './components/constants';
 
@@ -34,7 +34,7 @@ export default function ProductPage() {
 
     return (
         <div>
-            <EcommerceAppBar />
+            <EcommerceAppBar appBarTitle='Product Page'/>
             <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                     <Card>

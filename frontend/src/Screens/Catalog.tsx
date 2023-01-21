@@ -7,7 +7,7 @@ import { createTheme } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
-import EcommerceAppBar from './components/EcommerceAppBar';
+import {EcommerceAppBar} from './components/EcommerceAppBar';
 import { useNavigate } from 'react-router';
 import { Product } from '../Models/Product';
 import axios from 'axios';
@@ -43,7 +43,7 @@ export default function Catalog() {
         url: `${apiGatewayUrl}/api/product/all`
       }).then(response => {
         console.log(response.data);
-        setAllProducts(response.data.map((obj: { id: string, type: string; name: string; category: string; description: string; price: number; stock: number; image: string; }) => new Product(obj.id, obj.type, obj.name, obj.category, obj.description, obj.price, obj.stock, obj.image)));
+        setAllProducts(response.data.map((obj: { id: string; name: string; category: string; description: string; price: number; stock: number; image: string; }) => new Product(obj.id, obj.name, obj.category, obj.description, obj.price, obj.stock, obj.image)));
       }).catch((error) => {
         console.log(error);
       });
@@ -61,14 +61,14 @@ export default function Catalog() {
 
   return (
     <div>
-      <EcommerceAppBar />
+      <EcommerceAppBar appBarTitle='Product Catalog'/>
       <div>
         <Grid container spacing={3}>
           {products.map((product) => (
             <Grid item xs={3} key={Math.random() as React.Key}>
               <Card>
                 <CardMedia
-                  image={product.imageUrl}
+                  image={product.image}
                   title={product.name}
                   style={{ height: '150px' }}
                 />
