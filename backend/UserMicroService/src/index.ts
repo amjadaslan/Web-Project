@@ -97,8 +97,8 @@ app.use(cors({
 
 app.use(async (req: RequestWithPermission, res, next) => {
   console.log(req.url);
-  //Protected route is not relevant for login/signup requests, as no token exists.
-  if (req.url === '/api/user/login' || req.url === '/api/user/signup') {
+  //Protected route is not relevant for login/signup/forgot_password requests, as no token exists.
+  if ( ['/api/user/:username/answer','/api/user/login','/api/user/signup','/api/user/:username/question' ].includes(req.url)) {
     next();
     return;
   }
@@ -124,13 +124,64 @@ app.post('/api/user/login', function (req: RequestWithPermission, res) { loginRo
 
 app.put('/api/user/permission', function (req: RequestWithPermission, res) { changePermission(req, res); });
 
-app.put('/api/user/password', function (req: RequestWithPermission, res) { });
+app.get('/api/user/:username/question', function (req: RequestWithPermission, res) { getQuestion(req, res, req.params.username); });
+
+app.post('/api/user/:username/answer', function (req: RequestWithPermission, res) { validateQuestion_ChangePassword(req, res, req.params.username); });
 
 app.get('/api/user/:userId/permission', function (req: RequestWithPermission, res) { getPermission(req, res, req.params.userId); });
 
 app.get('/api/user/:userId/username', function (req: RequestWithPermission, res) { getUsername(req, res, req.params.userId); });
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
+
+const getQuestion = async (req: RequestWithPermission, res: Response, username: string) => {
+  console.log(username);
+  let user;
+  try {
+    user = await userService.getUserByUsername(username);
+  } catch (err) {
+    res.statusCode = 400;
+    res.end();
+    return;
+  }
+  res.statusCode = 200;
+  res.end(
+    JSON.stringify({
+      question:
+        user.question
+    })
+  );
+};
+
+const validateQuestion_ChangePassword = async (req: RequestWithPermission, res: Response, username: string) => {
+  console.log(username);
+  let user;
+  try {
+    user = await userService.getUserByUsername(username);
+  } catch (err) {
+    res.statusCode = 400;
+    res.end();
+    return;
+  }
+  let answer = req.body.answer;
+  if (answer !== user.answer) {
+    res.statusCode = 400;
+    res.end(JSON.stringify({
+      message: "Wrong Answer!",
+    }));
+  }
+  else {
+    try { await userService.changeUserPassword(username, req.body.newPassword); }
+    catch (err) {
+      res.statusCode = 500;
+      res.end();
+      return;
+    }
+    res.statusCode = 200;
+    res.end();
+  }
+
+}
 
 const getPermission = async (req: RequestWithPermission, res: Response, userId: string) => {
   console.log(userId);
@@ -168,6 +219,8 @@ const getUsername = async (req: Request, res: Response, userId: string) => {
     })
   );
 }
+
+
 
 //TODO: #10 Save token in a proper format (cookies)
 const loginRoute = async (req: RequestWithPermission, res: Response) => {
