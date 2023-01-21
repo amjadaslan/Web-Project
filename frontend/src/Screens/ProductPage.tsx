@@ -67,7 +67,11 @@ export default function ProductPage() {
                                 startIcon={<AddShoppingCartIcon />}
                                 //name, category, description, price, stock, image
                                 onClick={async () => {
-                                    console.log('lol')
+                                    await axios({
+                                        method: 'POST',
+                                        url: `${apiGatewayUrl}/api/product`,
+                                        data: {}
+                                    })
                                 }}
                             >
                                 Add to cart

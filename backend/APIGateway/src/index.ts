@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { IncomingMessage, ServerResponse } from "http";
 import jwt from "jsonwebtoken";
 import { ERROR_401 } from "./const.js";
@@ -9,6 +9,8 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
 dotenv.config();
+
+axios.defaults.withCredentials = true;
 
 // TODO: You need to config SERCRET_KEY in render.com dashboard, under Environment section.
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
@@ -21,6 +23,9 @@ const productServiceURL = process.env.PRODUCT_SERVICE_URL || "http://localhost:3
 const cartServiceURL = process.env.CART_SERVICE_URL || "http://localhost:3002";
 const orderServiceURL = process.env.ORDER_SERVICE_URL || "http://localhost:3003";
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
+
+//TODO: #16 Move protectedrout inside each Microserver
+//TODO: #17 Add CORS to each microserver
 
 // Verify JWT token
 const verifyJWT = (token: string) => {
@@ -35,7 +40,6 @@ const verifyJWT = (token: string) => {
 
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
 const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
-  let authHeader = req.headers["authorization"] as string;
   if (req.headers.cookie == undefined) {
     res.statusCode = 401;
     res.end(
@@ -88,130 +92,41 @@ apiGateway.use(cors({
 
 
 apiGateway.use(bodyParser.json());
-apiGateway.use(async (req, res, next) => {
-  console.log(req.url);
-  //Protected route is not relevant for login/signup requests, as no token exists.
-  if (req.url === '/api/user/login' || req.url === '/api/user/signup') {
-    next();
-    return;
-  }
 
-  const user = protectedRout(req, res);
-  let response: AxiosResponse;
-  try {
-    response = await axios.get(`${userServiceURL}/api/user/${user.userId}/permission`, { withCredentials: true });
-    console.log(response.data)
-  } catch (err) {
-    res.statusCode = 400;
-    res.end();
-    return;
-  }
-  if (user != ERROR_401) {
-    //req.body.permission = response.data.permission;
-    next();
-  }
-  else {
-    res.statusCode = 401;
-    res.end(
-      JSON.stringify({
-        message: "Unauthenticated user",
-      })
-    );
-  }
-});
+const connect = async (serviceType: string, serviceURL: string) => {
+  apiGateway.use(`/api/${serviceType}`, async (req, res) => {
+    try {
+      // Make the request to the microservice
+      const response = await axios({
+        method: req.method,
+        url: `${serviceURL}/api/${serviceType}${req.url}`,
+        data: req.body,
+        headers: req.headers
+      });
 
-//Call to UserMicroService
-apiGateway.use('/api/user', async (req, res) => {
-  console.log("user");
-  try {
-    // Make the request to the microservice
-    await axios({
-      method: req.method,
-      url: `${userServiceURL}/api/user${req.url}`,
-      data: req.body,
-      params: req.params,
-      withCredentials: true
-    }).then(axiosResponse => {
-      console.log('Cookie in axios:')
-      console.log(axiosResponse.headers['set-cookie'])
-
-      console.log('res before:')
-      console.log(res.getHeader('set-cookie'))
-
-      res.header('set-cookie', axiosResponse.headers['set-cookie'])
-
-      console.log('res after:')
-      console.log(res.getHeader('set-cookie'))
+      if (serviceURL == 'user/login') {
+        res.header('set-cookie', response.headers['set-cookie'])
+      }
 
       // Send the response back to the client
-      res.status(axiosResponse.status).send(axiosResponse.data);
-    });
+      res.status(response.status).send(response.data);
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  });
+}
 
-  } catch (err) {
-    res.status(500).send(err);
-  }
-});
+//Call to UserMicroService
+connect('user', userServiceURL);
 
 //Call to CartMicroService
-apiGateway.use('/api/cart', async (req, res) => {
-  try {
-    // Make the request to the microservice
-    const response = await axios({
-      method: req.method,
-      url: `${cartServiceURL}/api/cart${req.url}`,
-      data: req.body,
-      headers: req.headers
-    });
-
-    // Send the response back to the client
-    res.status(response.status).send(response.data);
-  } catch (err) {
-    res.status(500).send(err);
-  }
-});
+connect('cart', cartServiceURL);
 
 //Call to OrderMicroService
-apiGateway.use('/api/order', async (req, res) => {
-  try {
-    // Make the request to the microservice
-    const response = await axios({
-      method: req.method,
-      url: `${orderServiceURL}/api/order${req.url}`,
-      data: req.body,
-      headers: req.headers
-    });
-
-    // Send the response back to the client
-    res.status(response.status).send(response.data);
-  } catch (err) {
-    res.status(500).send(err);
-  }
-});
+connect('order', orderServiceURL);
 
 //Call to ProductMicroService
-apiGateway.use('/api/product', async (req, res) => {
-  console.log(req.body)
-  try {
-    // Make the request to the microservice
-    console.log('a')
-    const response = await axios({
-      method: req.method,
-      url: `${productServiceURL}/api/product${req.url}`,
-      data: req.body,
-      headers: req.headers,
-      withCredentials: true
-    });
-    console.log('b');
-    console.log(response);
-
-    // Send the response back to the client
-    res.status(response.status).send(response.data);
-  } catch (err) {
-    console.log('c')
-    console.log(err);
-    res.status(500).send(err);
-  }
-});
+connect('product', productServiceURL);
 
 //TODO: #9 Connect servers to the API Gateway
 

@@ -2,11 +2,12 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import * as bcrypt from "bcrypt";
 import express from "express";
-import { DBUSERNAME, DBPASS } from "./const.js";
+import { DBUSERNAME, DBPASS, ERROR_401 } from "./const.js";
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 import UserService from "./userService.js";
-import mongoose from "mongoose";
+import mongoose, { RootQuerySelector } from "mongoose";
 import bodyParser from "body-parser";
 
 const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
@@ -21,6 +22,67 @@ const userService = new UserService();
 const app = express();
 const port = 3004;
 
+interface RequestWithPermission extends Request {
+  permission: string;
+}
+
+// Verify JWT token
+const verifyJWT = (token: string) => {
+  try {
+    return jwt.verify(token, secretKey);
+    // Read more here: https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
+    // Read about the diffrence between jwt.verify and jwt.decode.
+  } catch (err) {
+    return false;
+  }
+};
+
+// Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
+const protectedRout = (req: Request, res: Response) => {
+  if (req.headers.cookie == undefined) {
+    res.statusCode = 401;
+    res.end(
+      JSON.stringify({
+        message: "No token or improper form.",
+      })
+    );
+    return ERROR_401;
+  }
+  let cookies = req.headers.cookie.split('; ');
+  console.log(cookies);
+
+  // We get the token value from cookies.
+  if (cookies.filter(str => str.startsWith("token")).length != 1) {
+    res.statusCode = 401;
+    res.end(
+      JSON.stringify({
+        message: "No token or improper form.",
+      })
+    );
+    return ERROR_401;
+  }
+  const token = cookies.find(str => str.startsWith("token")).substring("token=".length);
+
+  // Verify JWT token
+  const user = verifyJWT(token);
+  console.log(`my name is ${user}`)
+  if (!user) {
+    res.statusCode = 401;
+    res.end(
+      JSON.stringify({
+        message: "Failed to verify JWT.",
+      })
+    );
+    return ERROR_401;
+  }
+
+  // We are good!
+  return user;
+};
+
+app.use(cookieParser());
+
+
 const admin = await userService.getUserByUsername("admin");
 if (!admin) {
   await userService.createAdmin();
@@ -31,19 +93,46 @@ app.use(bodyParser.json());
 app.use(cors({
   origin: apiGatewayUrl,
   credentials: true
-}))
+}));
 
-app.post('/api/user/signup', function (req, res) { signupRoute(req, res); });
+app.use(async (req: RequestWithPermission, res, next) => {
+  console.log(req.url);
+  //Protected route is not relevant for login/signup requests, as no token exists.
+  if (req.url === '/api/user/login' || req.url === '/api/user/signup') {
+    next();
+    return;
+  }
 
-app.post('/api/user/login', function (req, res) { loginRoute(req, res); });
+  const userRes = protectedRout(req, res);
+  if (userRes != ERROR_401) {
+    //req.permission = userData.permission;
+    await userService
+      .getUser(userRes.userId).then((userData) => {
+        req.permission = userData.permission;
+        next();
+      })
+      .catch((err) => {
+        res.statusCode = 500;
+        res.end();
+      })
+  }
+});
 
-app.put('/api/user/permission', function (req, res) { changePermission(req, res); });
+app.post('/api/user/signup', function (req: RequestWithPermission, res) { signupRoute(req, res); });
 
-app.get('/api/user/:userId/permission', function (req, res) { getPermission(req, res, req.params.userId); });
+app.post('/api/user/login', function (req: RequestWithPermission, res) { loginRoute(req, res); });
+
+app.put('/api/user/permission', function (req: RequestWithPermission, res) { changePermission(req, res); });
+
+app.put('/api/user/password', function (req: RequestWithPermission, res) { });
+
+app.get('/api/user/:userId/permission', function (req: RequestWithPermission, res) { getPermission(req, res, req.params.userId); });
+
+app.get('/api/user/:userId/username', function (req: RequestWithPermission, res) { getUsername(req, res, req.params.userId); });
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
-const getPermission = async (req: Request, res: Response, userId: string) => {
+const getPermission = async (req: RequestWithPermission, res: Response, userId: string) => {
   console.log(userId);
   let user;
   try {
@@ -62,8 +151,26 @@ const getPermission = async (req: Request, res: Response, userId: string) => {
   );
 }
 
+const getUsername = async (req: Request, res: Response, userId: string) => {
+  let user;
+  try {
+    user = await userService.getUser(userId);
+  } catch (err) {
+    res.statusCode = 400;
+    res.end();
+    return;
+  }
+  res.statusCode = 200;
+  res.end(
+    JSON.stringify({
+      username:
+        user.username
+    })
+  );
+}
+
 //TODO: #10 Save token in a proper format (cookies)
-const loginRoute = async (req: Request, res: Response) => {
+const loginRoute = async (req: RequestWithPermission, res: Response) => {
   console.log("login");
   // Read request body.
   let credentials = req.body;
@@ -118,8 +225,9 @@ const loginRoute = async (req: Request, res: Response) => {
   const token = jwt.sign({ userId: user.userId }, secretKey, {
     expiresIn: 86400, // expires in 24 hours
   });
-  
+
   /** check if this is right */
+  console.log(token)
   res.cookie('token', token, {
     httpOnly: true,
     sameSite: 'none',
@@ -130,13 +238,12 @@ const loginRoute = async (req: Request, res: Response) => {
     // JSON.stringify({
     //   token: token,
     // }
-    );
+  );
 };
 
-const signupRoute = async (req: Request, res: Response) => {
+const signupRoute = async (req: RequestWithPermission, res: Response) => {
   console.log('signup');
   let credentials = req.body;
-
   if (!credentials.username || !credentials.password) {
     res.statusCode = 400;
     res.end(
@@ -163,6 +270,8 @@ const signupRoute = async (req: Request, res: Response) => {
     );
     return;
   }
+
+  //TODO: #24 Replace salt with render env variable
   const username = credentials.username;
   const password = await bcrypt.hash(credentials.password, 10);
 
@@ -186,8 +295,8 @@ const signupRoute = async (req: Request, res: Response) => {
   // });
 };
 
-const changePermission = async (req: Request, res: Response) => {
-  if (req.params.permission == "A") {
+const changePermission = async (req: RequestWithPermission, res: Response) => {
+  if (req.permission == "A") {
     // Read request body.
     let credentials = req.body;
     if (!credentials.username || !credentials.permission || !["W", "M"].includes(credentials.permission)) {

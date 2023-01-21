@@ -19,7 +19,7 @@ const orderSchema = new mongoose.Schema(
 
 );
 
-const couponSchema = new mongoose.Schema({ value: { type: String, required: true }, total: { type: Number, required: true } }, { collection: 'Coupons' });
+const couponSchema = new mongoose.Schema({ key: { type: String, required: true }, value: { type: Number, required: true } }, { collection: 'Coupons' });
 
 export const Order = mongoose.model("order", orderSchema);
 export const Address = mongoose.model("address", addressSchema);
