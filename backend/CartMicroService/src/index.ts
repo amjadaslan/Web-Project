@@ -90,7 +90,8 @@ app.use(async (req: RequestWithId_Permission, res, next) => {
 
     await axios
         .get(`${userServiceURL}/api/user/${user.userId}/permission`, {
-            headers: req.headers
+            headers: req.headers,
+            data: {}
         }).then(response => {
             console.log("received permission..");
             req.permission = response.data.permission;
