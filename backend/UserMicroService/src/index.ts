@@ -63,7 +63,6 @@ const protectedRout = (req: Request, res: Response) => {
     return ERROR_401;
   }
   const token = cookies.find(str => str.startsWith("token")).substring("token=".length);
-
   // Verify JWT token
   const user = verifyJWT(token);
   console.log(`my name is ${user.userId}`)
@@ -133,6 +132,10 @@ app.post('/api/user/:username/answer', function (req: RequestWithPermission, res
 app.get('/api/user/:userId/permission', function (req: RequestWithPermission, res) { getPermission(req, res, req.params.userId); });
 
 app.get('/api/user/:userId/username', function (req: RequestWithPermission, res) { getUsername(req, res, req.params.userId); });
+
+app.post('/api/user/logout', function (req: RequestWithPermission, res) {
+  res.clearCookie('token');
+});
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
