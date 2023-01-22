@@ -13,7 +13,7 @@ import { Catalog } from './Screens/Catalog';
 import { CartPage } from './Screens/CartPage/CartPage';
 import { CartItem } from './Models/Cart';
 import { Checkout } from './Screens/CheckoutScreen/Checkout';
-import { ProductPage } from './Screens/ProductPage';
+import { ProductPage } from './Screens/ProductPage/ProductPage';
 import { exampleProduct } from './debug';
 import { UserInfo } from './Models/UserInfo';
 import { EcommerceAppBar } from './Screens/components/EcommerceAppBar';
