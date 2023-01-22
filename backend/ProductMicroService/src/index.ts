@@ -10,6 +10,8 @@ import axios, { AxiosResponse } from "axios";
 import cookieParser from 'cookie-parser';
 import * as amqp from "amqplib";
 
+import * as dotenv from "dotenv";
+dotenv.config();
 
 axios.defaults.withCredentials = true;
 
@@ -26,7 +28,9 @@ const productService = new ProductService();
 const frontEndUrl = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000";
 const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3005";
 
-const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
+const dbPass = process.env.DBPASS || DBPASS;
+
+const dbUri = `mongodb+srv://${DBUSERNAME}:${dbPass}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);
 
 // Verify JWT token
@@ -319,11 +323,13 @@ const removeProduct = async (req: RequestWithPermission, res: Response, id: stri
 
 };
 
+const amqpKey = process.env.AMQPKey || "amqps://smbargni:48QYI_S6HQEbaLS7Q5i-ly4vbcwDNmXU@sparrow.rmq.cloudamqp.com/smbargni";
+
 const consumeMessages = async () => {
     try {
         // connect to RabbitMQ
         const conn = await amqp.connect(
-            "amqps://smbargni:48QYI_S6HQEbaLS7Q5i-ly4vbcwDNmXU@sparrow.rmq.cloudamqp.com/smbargni"
+            amqpKey
         );
         const channel = await conn.createChannel();
 

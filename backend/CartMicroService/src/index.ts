@@ -7,12 +7,17 @@ import jwt from "jsonwebtoken";
 import axios, { AxiosResponse } from "axios";
 import cookieParser from 'cookie-parser';
 
+import * as dotenv from "dotenv";
+dotenv.config();
+
 const cartService = new CartService();
 
+
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
+const dbPass = process.env.DBPASS || DBPASS;
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
 
-const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
+const dbUri = `mongodb+srv://${DBUSERNAME}:${dbPass}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);
 
 

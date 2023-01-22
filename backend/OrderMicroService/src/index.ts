@@ -9,6 +9,9 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { ProducerChannel } from './producerChannel.js';
 
+import * as dotenv from "dotenv";
+dotenv.config();
+
 interface RequestWithPermission_userId extends Request {
   permission: string;
   userId: string;
@@ -23,7 +26,9 @@ const cartServiceURL = process.env.CART_SERVICE_URL || "http://localhost:3002";
 const productServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3001";
 
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
-const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
+const dbPass = process.env.DBPASS || DBPASS;
+
+const dbUri = `mongodb+srv://${DBUSERNAME}:${dbPass}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);
 // Verify JWT token
 const verifyJWT = (token: string) => {

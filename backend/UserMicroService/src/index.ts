@@ -6,11 +6,16 @@ import { DBUSERNAME, DBPASS, ERROR_401 } from "./const.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
-import UserService from "./userService.js";
+import UserService from "./UserService.js";
 import mongoose, { RootQuerySelector } from "mongoose";
 import bodyParser from "body-parser";
 
-const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
+import * as dotenv from "dotenv";
+dotenv.config();
+const dbPass = process.env.DBPASS || DBPASS;
+const salt = process.env.SALT || 10;
+
+const dbUri = `mongodb+srv://${DBUSERNAME}:${dbPass}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);
 
 const frontEndUrl = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000";
@@ -122,17 +127,17 @@ app.use(async (req: RequestWithUserInfo, res, next) => {
 });
 
 
-app.post('/api/user/signup',bodyParser.json(), function (req: RequestWithUserInfo, res) {signupRoute(req, res); });
+app.post('/api/user/signup', bodyParser.json(), function (req: RequestWithUserInfo, res) { signupRoute(req, res); });
 
-app.post('/api/user/login',bodyParser.json(),  function (req: RequestWithUserInfo, res) {loginRoute(req, res); });
+app.post('/api/user/login', bodyParser.json(), function (req: RequestWithUserInfo, res) { loginRoute(req, res); });
 
-app.put('/api/user/permission',bodyParser.json(),  function (req: RequestWithUserInfo, res) {changePermission(req, res); });
+app.put('/api/user/permission', bodyParser.json(), function (req: RequestWithUserInfo, res) { changePermission(req, res); });
 
 app.get('/api/user/userInfo', function (req: RequestWithUserInfo, res) { getUserInfo(req, res); });
 
 app.get('/api/user/:username/question', function (req: RequestWithUserInfo, res) { getQuestion(req, res, req.params.username); });
 
-app.post('/api/user/:username/answer',bodyParser.json(),  function (req: RequestWithUserInfo, res) {validateQuestion_ChangePassword(req, res, req.params.username); });
+app.post('/api/user/:username/answer', bodyParser.json(), function (req: RequestWithUserInfo, res) { validateQuestion_ChangePassword(req, res, req.params.username); });
 
 app.post('/api/user/:username/answer', function (req: RequestWithUserInfo, res) { bodyParser.json(); validateQuestion_ChangePassword(req, res, req.params.username); });
 
@@ -357,12 +362,12 @@ const signupRoute = async (req: RequestWithUserInfo, res: Response) => {
 
   //TODO: #24 Replace salt with render env variable
   const username = credentials.username;
-  const password = await bcrypt.hash(credentials.password, 10);
+  const password = await bcrypt.hash(credentials.password, salt);
 
   const question = credentials.question;
   let answer;
   if (credentials.answer) {
-    answer = await bcrypt.hash(credentials.answer, 10);
+    answer = await bcrypt.hash(credentials.answer, salt);
   }
   try {
     await userService.createUser({ username, password, permission: "U", question, answer });
