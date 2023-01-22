@@ -1,6 +1,6 @@
 import { Box, Fab, Grid, SxProps } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { EcommerceAppBar } from '../../components/EcommerceAppBar';
+import { EcommerceAppBar } from '../../components/EcommerceAppbar/EcommerceAppBar';
 import { ProductCard } from './ProductCard';
 import { FC, useState } from 'react';
 import { Product } from '../../../Models/Product';

@@ -81,8 +81,6 @@ const app = express();
 
 app.use(cookieParser());
 
-app.use(bodyParser.json());
-
 app.use(cors({
   origin: apiGatewayUrl,
   credentials: true
@@ -93,11 +91,9 @@ app.use(async (req: RequestWithPermission_userId, res, next) => {
   const user = protectedRout(req, res);
   if (user == ERROR_401) { return; }
   console.log("getting permission..");
-
   await axios
     .get(`${userServiceURL}/api/user/${user.userId}/permission`, {
-      headers: req.headers,
-      data: {}
+      headers: req.headers
     }).then(response => {
       console.log("received permission..");
       req.permission = response.data.permission;
@@ -127,7 +123,7 @@ app.get('/api/order/all', function (req: RequestWithPermission_userId, res: Resp
   } else { getAllOrders(req, res); }
 });
 
-app.post('/api/order/coupon', function (req: RequestWithPermission_userId, res: Response) {
+app.post('/api/order/coupon',bodyParser.json(), function (req: RequestWithPermission_userId, res: Response) {
   console.log("Creating a coupon!");
   if (!['A'].includes(req.permission)) {
     res.statusCode = 403;
@@ -154,7 +150,7 @@ app.get('/api/order/:orderId', function (req: RequestWithPermission_userId, res:
   } else { getOrder(req, res, req.params.orderId); }
 });
 
-app.post('/api/order/', function (req: RequestWithPermission_userId, res: Response) {
+app.post('/api/order/',bodyParser.json(), function (req: RequestWithPermission_userId, res: Response) {
   createOrder(req, res, req.userId);
 });
 
@@ -347,6 +343,7 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
 //TODO: #6 Mark order as delivered once employee submits a request
 const markAsDelivered = async (req: Request, res: Response, orderId: string) => {
   let order;
+  console.log(orderId);
   try {
     order = await orderService.getOrder(orderId);
     if (!order) {

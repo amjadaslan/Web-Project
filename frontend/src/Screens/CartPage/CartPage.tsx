@@ -2,7 +2,7 @@ import { Box, Button, Card, CardContent, Grid, Typography } from "@mui/material"
 import { FC } from "react";
 import { useNavigate } from "react-router";
 import { CartItem } from "../../Models/Cart";
-import { EcommerceAppBar } from "../components/EcommerceAppBar";
+import { EcommerceAppBar } from "../components/EcommerceAppbar/EcommerceAppBar";
 import { CartItemCard } from "./CardItemCard";
 
 export interface CartPageProps {

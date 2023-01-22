@@ -20,20 +20,17 @@ const theme = createTheme();
 axios.defaults.withCredentials = true;
 
 export interface HomePageProps {
-    isLoading: boolean,
-    setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+    isLoading: number,
+    setIsLoading: React.Dispatch<React.SetStateAction<number>>
 }
 
 export const LoadingPage: React.FC<HomePageProps> = ({ isLoading, setIsLoading }) => {
     const navigate = useNavigate();
-
-    React.useEffect(() => {
-        const fetchData = async () => {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            navigate("cart");
-        }
-        fetchData();
-    })
+    if (isLoading == 1) {
+        navigate("/signin");
+    } else if (isLoading == 2) {
+        navigate("/catalog");
+    }
 
     return <>Loading</>;
 }

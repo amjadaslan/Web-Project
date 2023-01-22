@@ -32,10 +32,10 @@ import { AddToCart } from './ProductPageAxiosCalls';
 
 export interface ProductPageProps {
     setAppBarTitle: React.Dispatch<React.SetStateAction<string>>;
-    productsInCart: Product[]
+    allProducts: Product[];
 }
 
-export const ProductPage: FC<ProductPageProps> = ({ setAppBarTitle, productsInCart }) => {
+export const ProductPage: FC<ProductPageProps> = ({ setAppBarTitle, allProducts }) => {
     const navigate = useNavigate();
     let { productId } = useParams();
 
@@ -44,7 +44,7 @@ export const ProductPage: FC<ProductPageProps> = ({ setAppBarTitle, productsInCa
         return <>Undefined</>;
     }
 
-    const product = productsInCart.find((cartProduct) => cartProduct.id == productId) || exampleProduct();
+    const product = allProducts.find((someProduct) => someProduct.id == productId) || exampleProduct();
     setAppBarTitle("Product Details");
 
     const handleAddToCart = async (productId: string, quantity: number)=>{

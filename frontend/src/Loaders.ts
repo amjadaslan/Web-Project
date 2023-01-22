@@ -47,6 +47,7 @@ export const fetchCart = async (products: Product[], setAllCartItems: React.Disp
         }
         console.log(response.data.items);
         setAllCartItems(response.data.items.map((obj: any) => {
+            console.log(obj)
             const prod = products.find((product) => product.id == obj.productId) || exampleProduct();
             return new CartItem(prod, obj.count);
         }));
@@ -61,14 +62,10 @@ export const fetchCart = async (products: Product[], setAllCartItems: React.Disp
 }
 
 export const fetchUserInfo = async (setUserInfo: React.Dispatch<React.SetStateAction<UserInfo>>) => {
-    let userInfo: UserInfo;
-    await axios({
+    return await axios({
         method: 'GET',
         url: `${apiGatewayUrl}/api/user/userInfo`
     }).then((response) => {
         setUserInfo(response.data as UserInfo)
-        console.log(response.data as UserInfo);
-    }).catch((error) => {
-        console.log(error);
     });
 }

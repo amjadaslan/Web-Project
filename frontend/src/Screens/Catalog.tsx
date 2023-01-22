@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
-import { EcommerceAppBar } from './components/EcommerceAppBar';
+import { EcommerceAppBar } from './components/EcommerceAppbar/EcommerceAppBar';
 import { useNavigate } from 'react-router';
 import { Product } from '../Models/Product';
 import { FC } from 'react';

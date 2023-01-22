@@ -13,7 +13,7 @@ import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Review } from './Review';
-import { EcommerceAppBar } from '../components/EcommerceAppBar';
+import { EcommerceAppBar } from '../components/EcommerceAppbar/EcommerceAppBar';
 import { PaymentDetails } from '../../Models/PaymentDetails';
 import { CartItem } from '../../Models/Cart';
 import { FC, useState } from 'react';

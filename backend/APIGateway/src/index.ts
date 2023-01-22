@@ -111,7 +111,8 @@ const connect = async (serviceType: string, serviceURL: string) => {
       // Send the response back to the client
       res.status(response.status).send(response.data);
     } catch (err) {
-      res.status(err.status?err.status:500).send(err);
+      const isDef = err?.response?.status != undefined && err?.response?.status != null
+      res.status(isDef ? err.response.status : 500).send(err);
     }
   });
 }

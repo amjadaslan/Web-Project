@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -12,46 +12,32 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-import { apiGatewayUrl } from './components/constants';
+import { apiGatewayUrl } from '../components/constants';
+import { SendSignUpRequest } from './SignUpAxiosCalls';
 
 const theme = createTheme();
 
 export default function SignUp() {
 
+  const [hasError, setHasError] = useState<boolean>(false);
+
+  const [securityQuestion, setSecurityQuestion] = useState<string>("How old are you?");
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const username = data.get('username'), password = data.get('password'),
-    question = data.get('question'), answer = data.get('answer');
+      answer = data.get('answer');
 
-    if (username == '' || password == '' || question == '' || answer == '') {
-        console.log('Please fill required fields');
-        console.log({
-          "username": username,
-          "password": password,
-          "question" : question,
-          "answer" : answer
-      })
-        return;
+    if (username == '' || password == '' || answer == '') {
+      console.log('Please fill required fields');
+      setHasError(true);
+      return;
     }
+    await SendSignUpRequest(username, password, securityQuestion, answer);
+  };
 
-    await axios({
-        method: 'POST',
-        url: `${apiGatewayUrl}/api/user/signup`,
-        data: {
-            "username": username,
-            "password": password,
-            "question" : question,
-            "answer" : answer
-        }
-    }).then(response => {
-        console.log({
-            username: response.data.username
-        });
-    }).catch((error) => {
-        console.log(error);
-    });
-};
+  const questions = ["How old are you?", "What is your mom's name?", "Who is you favorite teacher from Technion?", "How many brothers do you have?"]
 
   return (
     <ThemeProvider theme={theme}>
@@ -77,21 +63,27 @@ export default function SignUp() {
                 <TextField
                   required
                   fullWidth
+                  error={hasError}
+                  helperText={hasError ? "Field must not be Empty" : ""}
                   name="username"
                   id="username"
                   label="Username"
                   autoComplete="username"
+                  onChange={() => setHasError(false)}
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   required
                   fullWidth
+                  error={hasError}
+                  helperText={hasError ? "Field must not be Empty" : ""}
                   name="password"
                   id="password"
                   label="Password"
                   autoComplete="new-password"
                   type="password"
+                  onChange={() => setHasError(false)}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -100,13 +92,11 @@ export default function SignUp() {
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={10}
-                    label="Age"
-                    onChange={() => { }}
+                    value={securityQuestion}
+                    label="Security Question"
+                    onChange={(val) => setSecurityQuestion(val.target.value)}
                   >
-                    <MenuItem value={10}>How old are you?</MenuItem>
-                    <MenuItem value={20}>Twenty</MenuItem>
-                    <MenuItem value={30}>Thirty</MenuItem>
+                    {questions.map((question) => <MenuItem value={question}>{question}</MenuItem>)}
                   </Select>
                 </FormControl>
               </Grid>
@@ -115,6 +105,9 @@ export default function SignUp() {
                   required
                   fullWidth
                   name="answer"
+                  error={hasError}
+                  helperText={hasError ? "Field must not be Empty" : ""}
+                  onChange={() => setHasError(false)}
                   id="answer"
                   label="Answer"
                   type="answer"
