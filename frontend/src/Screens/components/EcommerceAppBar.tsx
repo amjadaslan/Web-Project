@@ -10,20 +10,24 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const theme = createTheme();
 
-export default function EcommerceAppBar() {
+export interface EcommerceAppBarProps {
+    appBarTitle: string
+}
+
+export const EcommerceAppBar: React.FC<EcommerceAppBarProps> = ({ appBarTitle }) => {
     const navigate = useNavigate();
 
-    return (<AppBar position="static">
+    return (<AppBar position="sticky">
         <Toolbar>
             <Typography variant="h6">
-                Product Catalog
+                {appBarTitle}
             </Typography>
             <div style={{ flexGrow: 1 }} />
             <Avatar src={"avatar"} />
             <Typography style={{ margin: '0 8px' }}>
                 {"Amjad Aslan"}
             </Typography>
-            <IconButton color="inherit" onClick={()=>{navigate('/cart')}}>
+            <IconButton color="inherit" onClick={() => { navigate('/cart') }}>
                 <ShoppingCartIcon />
             </IconButton>
         </Toolbar>
