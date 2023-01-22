@@ -18,7 +18,7 @@ const apiGateway = express();
 
 const port = process.env.PORT || 3005;
 
-const frontEndUrl = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000";
+const frontEndUrl = process.env.FRONTEND_URL || "http://localhost:3000";
 const productServiceURL = process.env.PRODUCT_SERVICE_URL || "http://localhost:3001";
 const cartServiceURL = process.env.CART_SERVICE_URL || "http://localhost:3002";
 const orderServiceURL = process.env.ORDER_SERVICE_URL || "http://localhost:3003";
@@ -26,58 +26,6 @@ const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
 
 //TODO: #16 Move protectedrout inside each Microserver
 //TODO: #17 Add CORS to each microserver
-
-// Verify JWT token
-const verifyJWT = (token: string) => {
-  try {
-    return jwt.verify(token, secretKey);
-    // Read more here: https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
-    // Read about the diffrence between jwt.verify and jwt.decode.
-  } catch (err) {
-    return false;
-  }
-};
-
-// Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
-const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
-  if (req.headers.cookie == undefined) {
-    res.statusCode = 401;
-    res.end(
-      JSON.stringify({
-        message: "No token or improper form.",
-      })
-    );
-    return ERROR_401;
-  }
-  let cookies = req.headers.cookie.split('; ');
-
-  // We get the token value from cookies.
-  if (cookies.filter(str => str.startsWith("token")).length != 1) {
-    res.statusCode = 401;
-    res.end(
-      JSON.stringify({
-        message: "No token or improper form.",
-      })
-    );
-    return ERROR_401;
-  }
-  const token = cookies.find(str => str.startsWith("token")).substring("token=".length);
-
-  // Verify JWT token
-  const user = verifyJWT(token);
-  if (!user) {
-    res.statusCode = 401;
-    res.end(
-      JSON.stringify({
-        message: "Failed to verify JWT.",
-      })
-    );
-    return ERROR_401;
-  }
-
-  // We are good!
-  return user;
-};
 
 apiGateway.use(cookieParser());
 
