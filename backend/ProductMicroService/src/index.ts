@@ -17,7 +17,7 @@ interface RequestWithPermission extends Request {
 }
 
 const validCategories = ["t-shirt", "hoodie", "hat", "necklace", "bracelet", "shoes", "pillow", "mug", "book", "puzzle", "cards"];
-
+const cartServiceURL = process.env.CART_SERVICE_URL || "http://localhost:3002";
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const productService = new ProductService();
@@ -103,7 +103,8 @@ app.use(async (req: RequestWithPermission, res, next) => {
         console.log("getting permission..");
         await axios
             .get(`${userServiceURL}/api/user/${user.userId}/permission`, {
-                headers: req.headers
+                headers: req.headers,
+                data: {}
             }).then(response => {
                 console.log("received permission..");
                 req.permission = response.data.permission;
@@ -159,7 +160,12 @@ const getProduct = async (req: Request, res: Response, idOrType: string) => {
 };
 
 const getAllProducts = async (req: Request, res: Response, idOrType: string) => {
-    const products = await productService.getAllProducts();
+    let products
+    try { products = await productService.getAllProducts(); } catch (err) {
+        res.statusCode = 400;
+        res.end();
+        return;
+    }
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(products));
@@ -246,7 +252,10 @@ const updateProduct = async (req: RequestWithPermission, res: Response, id: stri
                     res.end(JSON.stringify({ message: 'Invalid Details' }));
                     return;
                 }
-                await productService.updateProduct({ id, name, category, description, price, stock, image });
+                if(stock==0){
+                    await productService.removeProduct(id);
+                }else{
+                await productService.updateProduct({ id, name, category, description, price, stock, image });}
             } catch (err) {
                 res.statusCode = 500;
                 res.end();

@@ -22,6 +22,15 @@ export const fetchProducts = async (setAllProducts: React.Dispatch<React.SetStat
 
 export const fetchOrders = async (setAllOrders: React.Dispatch<React.SetStateAction<Order[]>>) => {
     setAllOrders([exampleOrder(), exampleOrder(), exampleOrder()])
+    await axios({
+        method: 'GET',
+        url: `${apiGatewayUrl}/api/order/all`
+    }).then(response => {
+        console.log(response.data);
+        setAllOrders(response.data.map((obj: any) => obj as Order));
+    }).catch((error) => {
+        console.log(error);
+    });
 }
 
 export const fetchCart = async (setAllCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>) => {

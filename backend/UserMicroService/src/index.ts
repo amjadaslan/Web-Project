@@ -81,7 +81,7 @@ const protectedRout = (req: Request, res: Response) => {
   return user;
 };
 
-app.use(cookieParser());
+
 
 
 const admin = await userService.getUserByUsername("admin");
@@ -89,12 +89,14 @@ if (!admin) {
   await userService.createAdmin();
 }
 
-app.use(bodyParser.json());
+
 
 app.use(cors({
-  origin: '*',
+  origin: [apiGatewayUrl, frontEndUrl],
   credentials: true
 }));
+app.use(cookieParser());
+app.use(bodyParser.json());
 
 app.use(async (req: RequestWithPermission, res, next) => {
   console.log(req.url);

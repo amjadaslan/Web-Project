@@ -7,6 +7,7 @@ import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import {ProducerChannel} from './producerChannel.js';
 
 interface RequestWithPermission_userId extends Request {
   permission: string;
@@ -14,7 +15,9 @@ interface RequestWithPermission_userId extends Request {
 }
 
 const orderService = new OrderService();
+const producerChannel = new ProducerChannel();
 
+const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3005";
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
@@ -80,7 +83,7 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 app.use(cors({
-  origin: '*',
+  origin: apiGatewayUrl,
   credentials: true
 }));
 
@@ -92,7 +95,8 @@ app.use(async (req: RequestWithPermission_userId, res, next) => {
 
   await axios
     .get(`${userServiceURL}/api/user/${user.userId}/permission`, {
-      headers: req.headers
+      headers: req.headers,
+      data: {}
     }).then(response => {
       console.log("received permission..");
       req.permission = response.data.permission;
@@ -109,6 +113,18 @@ app.use(async (req: RequestWithPermission_userId, res, next) => {
 
 
 const port = 3003;
+
+app.get('/api/order/all', function (req: RequestWithPermission_userId, res: Response) {
+  if (!['A', 'M', 'W'].includes(req.permission)) {
+    res.statusCode = 403;
+    res.end(
+      JSON.stringify({
+        message: "User has no proper permissions",
+      })
+    );
+    return;
+  } else { getAllOrders(req, res); }
+});
 
 app.post('/api/order/coupon', function (req: RequestWithPermission_userId, res: Response) {
   console.log("Creating a coupon!");
@@ -172,7 +188,7 @@ app.get('/api/order/coupon/:key', async function (req: RequestWithPermission_use
 
 
 app.put('/api/order/:orderId', function (req: RequestWithPermission_userId, res: Response) {
-  if (!['A', 'M', 'W'].includes(req.permission)) {
+  if (!['A'].includes(req.permission)) {
     res.statusCode = 403;
     res.end(
       JSON.stringify({
@@ -201,6 +217,19 @@ const createCoupon = async (req: Request, res: Response) => {
 
 };
 
+const getAllOrders = async (req: Request, res: Response) => {
+  let orders;
+  try { orders = await orderService.getAllOrders(); } catch (err) {
+    res.statusCode = 500;
+    res.end();
+    return;
+  }
+  res.statusCode = 200;
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify(orders));
+  return;
+}
+
 const getOrder = async (req: Request, res: Response, orderId: string) => {
   let order;
   try { order = await orderService.getOrder(orderId); } catch (err) {
@@ -227,12 +256,11 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
   let order;
   try {
     //grab customer's name using his id
-    let response = await axios.get(`${userServiceURL}/api/user/${userId}/username`, { withCredentials: true });
-    const customerName = response.data;
+    // let response = await axios.get(`${userServiceURL}/api/user/${userId}/username`, { withCredentials: true });
+    const customerName = req.body.name;
 
     //address data from body
     const streetAddress = req.body.streetAddress;
-    const apartment = req.body.apartment;
     const city = req.body.city;
     const state = req.body.state;
     const country = req.body.country;
@@ -276,7 +304,7 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
     }
 
     //creates an order into mongodb
-    order = await orderService.createOrder({ customerName, streetAddress, apartment, city, state, country, zipCode });
+    order = await orderService.createOrder({ customerName, streetAddress, city, state, country, zipCode });
 
     if (!order) {
       res.statusCode = 400;
@@ -286,12 +314,10 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
     }
 
     //TODO: #5 Update stock for all items in order.
-    for (let item of cart.items) {
-      const productRes = await axios.get(`${process.env.PRODUCT}/api/product/${item.productId}`);
-      const product = productRes.data.product;
-      const newStock = product.stock - item.count;
-      await axios.put(`${process.env.PRODUCT}/api/product/${item.productId}`, { stock: newStock });
-    }
+
+    await producerChannel.sendEvent(cart.items);
+
+    
     await axios.delete(`${process.env.CART}/api/cart/${userId}`);
   } catch (err) {
     res.statusCode = 400;
