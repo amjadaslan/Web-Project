@@ -34,5 +34,5 @@ export const fetchOrders = async (setAllOrders: React.Dispatch<React.SetStateAct
 }
 
 export const fetchCart = async (setAllCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>) => {
-    setAllCartItems([exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem()])
+    return await axios.get(`${apiGatewayUrl}/api/cart/`);
 }

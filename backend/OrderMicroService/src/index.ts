@@ -7,7 +7,7 @@ import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import {ProducerChannel} from './producerChannel.js';
+import { ProducerChannel } from './producerChannel.js';
 
 interface RequestWithPermission_userId extends Request {
   permission: string;
@@ -153,16 +153,8 @@ app.get('/api/order/:orderId', function (req: RequestWithPermission_userId, res:
   } else { getOrder(req, res, req.params.orderId); }
 });
 
-app.post('/api/order/:userId', function (req: RequestWithPermission_userId, res: Response) {
-  if (req.userId !== req.params.userId) {
-    res.statusCode = 403;
-    res.end(
-      JSON.stringify({
-        message: "User has no proper permissions",
-      })
-    );
-    return;
-  } else { createOrder(req, res, req.params.userId); }
+app.post('/api/order/', function (req: RequestWithPermission_userId, res: Response) {
+  createOrder(req, res, req.userId);
 });
 
 app.get('/api/order/coupon/:key', async function (req: RequestWithPermission_userId, res: Response) {
@@ -317,7 +309,7 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
 
     await producerChannel.sendEvent(cart.items);
 
-    
+
     await axios.delete(`${process.env.CART}/api/cart/${userId}`);
   } catch (err) {
     res.statusCode = 400;
