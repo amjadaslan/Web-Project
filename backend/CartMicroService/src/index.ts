@@ -24,7 +24,6 @@ interface RequestWithId_Permission extends Request {
 
 const app = express();
 
-app.use(bodyParser.json());
 
 app.use(cookieParser());
 
@@ -84,6 +83,7 @@ const protectedRout = (req: Request, res: Response) => {
 
 app.use(async (req: RequestWithId_Permission, res, next) => {
     console.log(req.url);
+    console.log(req.headers);
     const user = protectedRout(req, res);
     if (user == ERROR_401) { return; }
     console.log("getting permission..");
@@ -113,16 +113,16 @@ app.get('/api/cart/', function (req: RequestWithId_Permission, res: Response) {
     getCart(req, res, req.actualId);
 });
 
-app.post('/api/cart/', function (req: RequestWithId_Permission, res: Response) {
+app.post('/api/cart/', bodyParser.json(), function (req: RequestWithId_Permission, res: Response) {
     addToCart(req, res, req.actualId);
 });
 
-app.put('/api/cart/', function (req: RequestWithId_Permission, res: Response) {
+app.put('/api/cart/', bodyParser.json(), function (req: RequestWithId_Permission, res: Response) {
     updateCartItem(req, res, req.actualId);
 });
 
 
-app.put('/api/cart/item/', function (req: RequestWithId_Permission, res: Response) {
+app.put('/api/cart/item/', bodyParser.json(), function (req: RequestWithId_Permission, res: Response) {
     removeCartItem(req, res, req.actualId);
 });
 
@@ -154,6 +154,7 @@ const getCart = async (req: Request, res: Response, userId: string) => {
     let cart;
     try {
         cart = await cartService.getCart(userId);
+        console.log(cart);
     } catch (err) {
 
         res.statusCode = 404;
