@@ -33,6 +33,10 @@ class ProductService {
 
     //Updates fields in a product (e.g., price, count)
     async updateProduct({ id, name, category, description, price, stock, image }) {
+        if (stock == 0) {
+            await this.removeProduct(id);
+            return;
+        }
         const prod = await Product.findOne({ id: id });
         const productData = {
             name: name || prod.name,

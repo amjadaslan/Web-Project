@@ -7,6 +7,7 @@ import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import {ProducerChannel} from './producerChannel.js';
 
 interface RequestWithPermission_userId extends Request {
   permission: string;
@@ -14,6 +15,7 @@ interface RequestWithPermission_userId extends Request {
 }
 
 const orderService = new OrderService();
+const producerChannel = new ProducerChannel();
 
 const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3005";
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
@@ -254,12 +256,11 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
   let order;
   try {
     //grab customer's name using his id
-    let response = await axios.get(`${userServiceURL}/api/user/${userId}/username`, { withCredentials: true });
-    const customerName = response.data;
+    // let response = await axios.get(`${userServiceURL}/api/user/${userId}/username`, { withCredentials: true });
+    const customerName = req.body.name;
 
     //address data from body
     const streetAddress = req.body.streetAddress;
-    const apartment = req.body.apartment;
     const city = req.body.city;
     const state = req.body.state;
     const country = req.body.country;
@@ -303,7 +304,7 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
     }
 
     //creates an order into mongodb
-    order = await orderService.createOrder({ customerName, streetAddress, apartment, city, state, country, zipCode });
+    order = await orderService.createOrder({ customerName, streetAddress, city, state, country, zipCode });
 
     if (!order) {
       res.statusCode = 400;
@@ -313,12 +314,10 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
     }
 
     //TODO: #5 Update stock for all items in order.
-    for (let item of cart.items) {
-      const productRes = await axios.get(`${process.env.PRODUCT}/api/product/${item.productId}`);
-      const product = productRes.data.product;
-      const newStock = product.stock - item.count;
-      await axios.put(`${process.env.PRODUCT}/api/product/${item.productId}`, { stock: newStock });
-    }
+
+    await producerChannel.sendEvent(cart.items);
+
+    
     await axios.delete(`${process.env.CART}/api/cart/${userId}`);
   } catch (err) {
     res.statusCode = 400;
