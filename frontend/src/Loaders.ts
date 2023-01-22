@@ -34,8 +34,24 @@ export const fetchOrders = async (setAllOrders: React.Dispatch<React.SetStateAct
     });
 }
 
-export const fetchCart = async (setAllCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>) => {
-    setAllCartItems([exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem(), exampleCartItem()])
+export const fetchCart = async (products: Product[], setAllCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>) => {
+    await axios.get(`${apiGatewayUrl}/api/cart/`).then((response) => {
+        if (!response.data) {
+            setAllCartItems([]);
+            return;
+        }
+        setAllCartItems(response.data.items.map((obj: any) => {
+            const prod = products.find((product) => product.id == obj.productId) || exampleProduct();
+            return new CartItem(prod, obj.count);
+        }));
+    })
+        .catch((error) => {
+            if (error.status == 404) {
+                setAllCartItems([]);
+            } else {
+                console.log(error);
+            }
+        });
 }
 
 export const fetchUserInfo = async (setUserInfo: React.Dispatch<React.SetStateAction<UserInfo>>) => {

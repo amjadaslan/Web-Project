@@ -108,66 +108,27 @@ app.use(async (req: RequestWithId_Permission, res, next) => {
 
 
 const port = 3002;
-app.get('/api/cart/:userid', function (req: RequestWithId_Permission, res: Response) {
-    if (req.actualId !== req.params.userid && !['A', 'M', 'W'].includes(req.permission)) {
-        res.statusCode = 403;
-        res.end(
-            JSON.stringify({
-                message: "User has no proper permissions",
-            })
-        );
-        return;
-    } else { getCart(req, res, req.params.userid); }
+app.get('/api/cart/', function (req: RequestWithId_Permission, res: Response) {
+
+    getCart(req, res, req.actualId);
 });
 
-app.post('/api/cart/:userid', function (req: RequestWithId_Permission, res: Response) {
-    if (req.actualId !== req.params.userid) {
-        res.statusCode = 403;
-        res.end(
-            JSON.stringify({
-                message: "User has no proper permissions",
-            })
-        );
-        return;
-    } else { addToCart(req, res, req.params.userid); }
+app.post('/api/cart/', function (req: RequestWithId_Permission, res: Response) {
+    addToCart(req, res, req.actualId);
 });
 
-app.put('/api/cart/:userid', function (req: RequestWithId_Permission, res: Response) {
-    if (req.actualId !== req.params.userid) {
-        res.statusCode = 403;
-        res.end(
-            JSON.stringify({
-                message: "User has no proper permissions",
-            })
-        );
-        return;
-    } else { updateCartItem(req, res, req.params.userid); }
+app.put('/api/cart/', function (req: RequestWithId_Permission, res: Response) {
+    updateCartItem(req, res, req.actualId);
 });
 
 
-app.delete('/api/cart/item/:userid', function (req: RequestWithId_Permission, res: Response) {
-    if (req.actualId !== req.params.userid && !['A', 'M', 'W'].includes(req.permission)) {
-        res.statusCode = 403;
-        res.end(
-            JSON.stringify({
-                message: "User has no proper permissions",
-            })
-        );
-        return;
-    } else { removeCartItem(req, res, req.params.userid); }
+app.put('/api/cart/item/', function (req: RequestWithId_Permission, res: Response) {
+    removeCartItem(req, res, req.actualId);
 });
 
 
-app.delete('/api/cart/:userid', function (req: RequestWithId_Permission, res: Response) {
-    if (req.actualId !== req.params.userid && !['A', 'M', 'W'].includes(req.permission)) {
-        res.statusCode = 403;
-        res.end(
-            JSON.stringify({
-                message: "User has no proper permissions",
-            })
-        );
-        return;
-    } else { removeCart(req, res, req.params.userid); }
+app.delete('/api/cart/', function (req: RequestWithId_Permission, res: Response) {
+    removeCart(req, res, req.actualId);
 });
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
@@ -194,15 +155,10 @@ const getCart = async (req: Request, res: Response, userId: string) => {
     try {
         cart = await cartService.getCart(userId);
     } catch (err) {
-        res.statusCode = 400;
-        res.end();
-        return;
-    }
-    if (!cart) {
+
         res.statusCode = 404;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: "Cart does not exist!" }));
-        return;
     }
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");

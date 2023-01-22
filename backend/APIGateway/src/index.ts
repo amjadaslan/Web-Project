@@ -113,7 +113,7 @@ const connect = async (serviceType: string, serviceURL: string) => {
       // Send the response back to the client
       res.status(response.status).send(response.data);
     } catch (err) {
-      res.status(500).send(err);
+      res.status(err.status).send(err);
     }
   });
 }

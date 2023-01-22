@@ -98,6 +98,7 @@ app.use(cors({
   origin: [apiGatewayUrl, frontEndUrl, cartServiceUrl, productServiceUrl, orderServiceURL],
   credentials: true
 }));
+
 app.use(cookieParser());
 
 app.use(async (req: RequestWithUserInfo, res, next) => {
@@ -123,15 +124,18 @@ app.use(async (req: RequestWithUserInfo, res, next) => {
   }
 });
 
-app.post('/api/user/signup', function (req: RequestWithUserInfo, res) { bodyParser.json(); signupRoute(req, res); });
 
-app.post('/api/user/login', function (req: RequestWithUserInfo, res) { bodyParser.json(); loginRoute(req, res); });
+app.post('/api/user/signup',bodyParser.json(), function (req: RequestWithUserInfo, res) {signupRoute(req, res); });
 
-app.put('/api/user/permission', function (req: RequestWithUserInfo, res) { bodyParser.json(); changePermission(req, res); });
+app.post('/api/user/login',bodyParser.json(),  function (req: RequestWithUserInfo, res) {loginRoute(req, res); });
+
+app.put('/api/user/permission',bodyParser.json(),  function (req: RequestWithUserInfo, res) {changePermission(req, res); });
 
 app.get('/api/user/userInfo', function (req: RequestWithUserInfo, res) { getUserInfo(req, res); });
 
 app.get('/api/user/:username/question', function (req: RequestWithUserInfo, res) { getQuestion(req, res, req.params.username); });
+
+app.post('/api/user/:username/answer',bodyParser.json(),  function (req: RequestWithUserInfo, res) {validateQuestion_ChangePassword(req, res, req.params.username); });
 
 app.post('/api/user/:username/answer', function (req: RequestWithUserInfo, res) { bodyParser.json(); validateQuestion_ChangePassword(req, res, req.params.username); });
 

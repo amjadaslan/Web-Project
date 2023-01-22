@@ -35,9 +35,10 @@ function App() {
   useEffect(() => {
     //TODO: What to do if one of these fails??
     fetchUserInfo(setUserInfo).then(() => setIsLoading(false));
-    fetchProducts(setAllProducts);
+    fetchProducts(setAllProducts).then(()=>{
+      fetchCart(allProducts, setAllCartItems);
+    });
     fetchOrders(setallOrders);
-    fetchCart(setAllCartItems);
   }, []);
 
   return (
