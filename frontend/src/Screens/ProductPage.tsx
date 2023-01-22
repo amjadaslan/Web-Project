@@ -4,14 +4,12 @@ import {
 } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 
-import { EcommerceAppBar } from './components/EcommerceAppBar';
 import axios from 'axios';
 import { apiGatewayUrl } from './components/constants';
 import { exampleProduct } from '../debug';
 import { Product } from '../Models/Product';
 import { FC } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { CartItem } from '../Models/Cart';
 
 // const useStyles = makeStyles({
 //     card: {
@@ -32,10 +30,11 @@ import { CartItem } from '../Models/Cart';
 // });
 
 export interface ProductPageProps {
+    setAppBarTitle: React.Dispatch<React.SetStateAction<string>>;
     productsInCart: Product[]
 }
 
-export const ProductPage: FC<ProductPageProps> = ({ productsInCart }) => {
+export const ProductPage: FC<ProductPageProps> = ({ setAppBarTitle, productsInCart }) => {
     const navigate = useNavigate();
     let { productId } = useParams();
 
@@ -45,10 +44,11 @@ export const ProductPage: FC<ProductPageProps> = ({ productsInCart }) => {
     }
 
     const product = productsInCart.find((cartProduct) => cartProduct.id == productId) || exampleProduct();
+    setAppBarTitle(`Product Page - ${product.name}`);
 
     return (
         <div>
-            <EcommerceAppBar appBarTitle='Product Page' />
+            {/* <EcommerceAppBar appBarTitle='Product Page' /> */}
             <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                     <Card>

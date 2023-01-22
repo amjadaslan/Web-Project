@@ -6,14 +6,16 @@ import { ProductCard } from "../ProductDashboard/ProductCard";
 import { OrderCard } from "./OrderCard";
 
 export interface OrderDashboardProps {
+    setAppBarTitle: React.Dispatch<React.SetStateAction<string>>;
     allOrders: Order[],
     setAllOrders: React.Dispatch<React.SetStateAction<Order[]>>
 }
 
-export const OrderDashboard: FC<OrderDashboardProps> = ({ allOrders, setAllOrders }) => {
+export const OrderDashboard: FC<OrderDashboardProps> = ({ setAppBarTitle, allOrders, setAllOrders }) => {
+    setAppBarTitle('Orders Dashboard | BACKOFFICE');
+
     return <div>
         <Box>
-            <EcommerceAppBar appBarTitle='Orders Dashboard | BACKOFFICE' />
             <Box>
                 <Grid container spacing={2} padding={2}>
                     {allOrders.map(order => <OrderCard key={order.orderId} order={order} />)}

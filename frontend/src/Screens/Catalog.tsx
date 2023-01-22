@@ -20,15 +20,16 @@ import { FC } from 'react';
 // );
 
 export interface CatalogProps {
+  setAppBarTitle : React.Dispatch<React.SetStateAction<string>>;
   allProducts: Product[]
 }
 
-export const Catalog: FC<CatalogProps> = ({ allProducts }) => {
+export const Catalog: FC<CatalogProps> = ({ setAppBarTitle, allProducts }) => {
   const navigate = useNavigate();
+  setAppBarTitle("Product Catalog");
 
   return (
     <div>
-      <EcommerceAppBar appBarTitle='Product Catalog' />
       <div>
         <Grid container spacing={3}>
           {allProducts.map((product) => (

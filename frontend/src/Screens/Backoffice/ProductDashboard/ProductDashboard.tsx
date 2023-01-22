@@ -8,16 +8,17 @@ import { ProductDetailsDialog } from './ProductDetailsDialog';
 import { AddProduct } from './ProductDashboardAxiosCalls';
 
 export interface ProductDashboardProps {
+    setAppBarTitle: React.Dispatch<React.SetStateAction<string>>;
     allProducts: Product[],
     setAllProducts: React.Dispatch<React.SetStateAction<Product[]>>
 }
 
-export const ProductDashboard: FC<ProductDashboardProps> = ({ allProducts, setAllProducts }) => {
+export const ProductDashboard: FC<ProductDashboardProps> = ({ setAppBarTitle, allProducts, setAllProducts }) => {
     const [openDialog, setOpenDialog] = useState<boolean>(false);
+    setAppBarTitle('Products Dashboard | BACKOFFICE');
 
     return <div>
         <Box>
-            <EcommerceAppBar appBarTitle='Products Dashboard | BACKOFFICE' />
             <Fab color="primary" variant="extended" sx={fabStyle} onClick={() => { setOpenDialog(true) }}>
                 <AddIcon />
                 Add Product

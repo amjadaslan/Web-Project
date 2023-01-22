@@ -27,10 +27,11 @@ const steps = ['Shipping address', 'Payment details', 'Review your order'];
 const theme = createTheme();
 
 export interface CheckoutProps {
+    setAppBarTitle: React.Dispatch<React.SetStateAction<string>>,
     cartItems: CartItem[]
 }
 
-export const Checkout: FC<CheckoutProps> = ({ cartItems }) => {
+export const Checkout: FC<CheckoutProps> = ({ setAppBarTitle, cartItems }) => {
     // const [cardType, setCardType] = useState<string>("VISA");
     // const [cardHolder, setCardHolder] = useState<string>("");
     // const [cardNumber, setCardNumber] = useState<string>("");
@@ -86,7 +87,7 @@ export const Checkout: FC<CheckoutProps> = ({ cartItems }) => {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <EcommerceAppBar appBarTitle='Checkout' />
+            {/* <EcommerceAppBar appBarTitle='Checkout' /> */}
             <Container component="main" maxWidth="sm" sx={{ mb: 4 }}>
                 <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
                     <Typography component="h1" variant="h4" align="center">

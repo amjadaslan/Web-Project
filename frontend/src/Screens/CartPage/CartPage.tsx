@@ -6,18 +6,20 @@ import { EcommerceAppBar } from "../components/EcommerceAppBar";
 import { CartItemCard } from "./CardItemCard";
 
 export interface CartPageProps {
+    setAppBarTitle: React.Dispatch<React.SetStateAction<string>>,
     cartItems: CartItem[],
     setAllCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>
 }
 
-export const CartPage: FC<CartPageProps> = ({ cartItems, setAllCartItems }) => {
+export const CartPage: FC<CartPageProps> = ({ setAppBarTitle, cartItems, setAllCartItems }) => {
     const navigate = useNavigate();
 
     const totalPrice = cartItems.reduce((sum, item) => (sum + item.quantity * item.product.price), 0);
+    setAppBarTitle('My Cart');
 
     return <div>
         <Box>
-            <EcommerceAppBar appBarTitle='My Cart' />
+            {/* <EcommerceAppBar appBarTitle='My Cart' /> */}
             <Box>
                 <Card >
                     <CardContent>
