@@ -97,6 +97,7 @@ app.use(cors({
   origin: [apiGatewayUrl, frontEndUrl, cartServiceUrl, productServiceUrl, orderServiceURL],
   credentials: true
 }));
+
 app.use(cookieParser());
 
 app.use(async (req: RequestWithPermission, res, next) => {
@@ -121,15 +122,16 @@ app.use(async (req: RequestWithPermission, res, next) => {
   }
 });
 
-app.post('/api/user/signup', function (req: RequestWithPermission, res) {bodyParser.json(); signupRoute(req, res); });
 
-app.post('/api/user/login', function (req: RequestWithPermission, res) {bodyParser.json(); loginRoute(req, res); });
+app.post('/api/user/signup',bodyParser.json(), function (req: RequestWithPermission, res) {signupRoute(req, res); });
 
-app.put('/api/user/permission', function (req: RequestWithPermission, res) {bodyParser.json(); changePermission(req, res); });
+app.post('/api/user/login',bodyParser.json(),  function (req: RequestWithPermission, res) {loginRoute(req, res); });
+
+app.put('/api/user/permission',bodyParser.json(),  function (req: RequestWithPermission, res) {changePermission(req, res); });
 
 app.get('/api/user/:username/question', function (req: RequestWithPermission, res) { getQuestion(req, res, req.params.username); });
 
-app.post('/api/user/:username/answer', function (req: RequestWithPermission, res) {bodyParser.json(); validateQuestion_ChangePassword(req, res, req.params.username); });
+app.post('/api/user/:username/answer',bodyParser.json(),  function (req: RequestWithPermission, res) {validateQuestion_ChangePassword(req, res, req.params.username); });
 
 app.get('/api/user/:userId/permission', function (req: RequestWithPermission, res) { getPermission(req, res, req.params.userId); });
 

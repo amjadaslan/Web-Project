@@ -28,9 +28,10 @@ function App() {
 
   useEffect(() => {
     //TODO: What to do if one of these fails??
-    fetchProducts(setAllProducts);
+    fetchProducts(setAllProducts).then(()=>{
+      fetchCart(allProducts, setAllCartItems);
+    });
     fetchOrders(setallOrders);
-    fetchCart(setAllCartItems);
   }, []);
 
   return (

@@ -155,15 +155,10 @@ const getCart = async (req: Request, res: Response, userId: string) => {
     try {
         cart = await cartService.getCart(userId);
     } catch (err) {
-        res.statusCode = 400;
-        res.end();
-        return;
-    }
-    if (!cart) {
+
         res.statusCode = 404;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: "Cart does not exist!" }));
-        return;
     }
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
