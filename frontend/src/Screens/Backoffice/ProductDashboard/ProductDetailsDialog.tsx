@@ -1,5 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, Grid, InputLabel, MenuItem, Select, TextField } from "@mui/material";
 import { FC, useState } from "react"
+import { fetchProducts } from "../../../Loaders";
 import { Product, validProductCategories } from "../../../Models/Product";
 import { CapitalFirstLetter } from "../../components/helperMethods";
 import { AddProduct } from "./ProductDashboardAxiosCalls";
@@ -14,13 +15,14 @@ export interface ProductDetailsDialogProps {
 export const ProductDetailsDialog: FC<ProductDetailsDialogProps> = ({ isOpen, setIsOpen, existingProduct, onConfirm}) => {
 
     const handleConfirm = async () => {
-        await onConfirm(new Product("", productName, category, description, price, stock, imageUrl))
+        await onConfirm(new Product(existingProduct?.id || "", productName, category, description, price, stock, imageUrl))
             .then((_) => {
                 setIsOpen(false);
                 restoreFieldValues();
             })
-            .catch((_) => {
-                console.log("An Error has Occured while adding Product");
+            .catch((err) => {
+                console.log(err);
+                console.log("An Error has Occured in dialog");
             })
     };
 

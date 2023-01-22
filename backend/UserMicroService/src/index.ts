@@ -15,6 +15,9 @@ await mongoose.connect(dbUri);
 
 const frontEndUrl = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000";
 const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3005";
+const productServiceUrl = process.env.CART_SERVICE_URL || "http://localhost:3001";
+const cartServiceUrl = process.env.API_GATEWAY_URL || "http://localhost:3002";
+const orderServiceURL = process.env.API_GATEWAY_URL || "http://localhost:3003";
 
 
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
@@ -63,7 +66,6 @@ const protectedRout = (req: Request, res: Response) => {
     return ERROR_401;
   }
   const token = cookies.find(str => str.startsWith("token")).substring("token=".length);
-
   // Verify JWT token
   const user = verifyJWT(token);
   console.log(`my name is ${user.userId}`)
@@ -92,11 +94,10 @@ if (!admin) {
 
 
 app.use(cors({
-  origin: [apiGatewayUrl, frontEndUrl],
+  origin: [apiGatewayUrl, frontEndUrl, cartServiceUrl, productServiceUrl, orderServiceURL],
   credentials: true
 }));
 app.use(cookieParser());
-app.use(bodyParser.json());
 
 app.use(async (req: RequestWithPermission, res, next) => {
   console.log(req.url);
@@ -120,19 +121,23 @@ app.use(async (req: RequestWithPermission, res, next) => {
   }
 });
 
-app.post('/api/user/signup', function (req: RequestWithPermission, res) { signupRoute(req, res); });
+app.post('/api/user/signup', function (req: RequestWithPermission, res) {bodyParser.json(); signupRoute(req, res); });
 
-app.post('/api/user/login', function (req: RequestWithPermission, res) { loginRoute(req, res); });
+app.post('/api/user/login', function (req: RequestWithPermission, res) {bodyParser.json(); loginRoute(req, res); });
 
-app.put('/api/user/permission', function (req: RequestWithPermission, res) { changePermission(req, res); });
+app.put('/api/user/permission', function (req: RequestWithPermission, res) {bodyParser.json(); changePermission(req, res); });
 
 app.get('/api/user/:username/question', function (req: RequestWithPermission, res) { getQuestion(req, res, req.params.username); });
 
-app.post('/api/user/:username/answer', function (req: RequestWithPermission, res) { validateQuestion_ChangePassword(req, res, req.params.username); });
+app.post('/api/user/:username/answer', function (req: RequestWithPermission, res) {bodyParser.json(); validateQuestion_ChangePassword(req, res, req.params.username); });
 
 app.get('/api/user/:userId/permission', function (req: RequestWithPermission, res) { getPermission(req, res, req.params.userId); });
 
 app.get('/api/user/:userId/username', function (req: RequestWithPermission, res) { getUsername(req, res, req.params.userId); });
+
+app.post('/api/user/logout', function (req: RequestWithPermission, res) {
+  res.clearCookie('token');
+});
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
