@@ -2,28 +2,14 @@ import * as React from 'react';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { createTheme } from '@mui/material/styles';
 
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
-import {EcommerceAppBar} from './components/EcommerceAppBar';
+import { EcommerceAppBar } from './components/EcommerceAppBar';
 import { useNavigate } from 'react-router';
 import { Product } from '../Models/Product';
-import axios from 'axios';
-import { apiGatewayUrl } from './components/constants';
-
-const theme = createTheme();
-
-export class prodExample {
-  id: number = 1;
-  image: string = "https://i.imgur.com/HsAQOrJ.jpeg";
-  name: string = "Some Product";
-  description: string = Math.random() < 0.5 ? "This is a short description of the productttttttttttttttttttrtrtrtrttrtrtrtrtrtrtrtrtrtrttrt" : "hi";
-  price: number = 123;
-  quantity: number = 1;
-  category: string = "Computers";
-}
+import { FC } from 'react';
 
 // const useStyles = makeStyles(() =>
 //   createStyles({
@@ -33,38 +19,19 @@ export class prodExample {
 //   }),
 // );
 
-export default function Catalog() {
+export interface CatalogProps {
+  allProducts: Product[]
+}
+
+export const Catalog: FC<CatalogProps> = ({ allProducts }) => {
   const navigate = useNavigate();
-
-  React.useEffect(() => {
-    const fetchProducts = async () => {
-      await axios({
-        method: 'GET',
-        url: `${apiGatewayUrl}/api/product/all`
-      }).then(response => {
-        console.log(response.data);
-        setAllProducts(response.data.map((obj: { id: string; name: string; category: string; description: string; price: number; stock: number; image: string; }) => new Product(obj.id, obj.name, obj.category, obj.description, obj.price, obj.stock, obj.image)));
-      }).catch((error) => {
-        console.log(error);
-      });
-
-      // await new Promise(resolve => setTimeout(resolve, 1000));
-      // navigate("cart");
-    }
-    fetchProducts();
-  }, []);
-
-  const [allProducts, setAllProducts] = React.useState<Product[]>([]);
-
-
-  let products = allProducts;
 
   return (
     <div>
-      <EcommerceAppBar appBarTitle='Product Catalog'/>
+      <EcommerceAppBar appBarTitle='Product Catalog' />
       <div>
         <Grid container spacing={3}>
-          {products.map((product) => (
+          {allProducts.map((product) => (
             <Grid item xs={3} key={Math.random() as React.Key}>
               <Card>
                 <CardMedia

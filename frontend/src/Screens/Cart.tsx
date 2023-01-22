@@ -3,9 +3,10 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import * as React from 'react';
-import { prodExample } from './Catalog';
+import { useNavigate } from 'react-router';
+import { exampleProduct } from '../debug';
 import { apiGatewayUrl } from './components/constants';
-import {EcommerceAppBar} from './components/EcommerceAppBar';
+import { EcommerceAppBar } from './components/EcommerceAppBar';
 
 // const useStyles = makeStyles((theme) => ({
 //     card: {
@@ -18,20 +19,22 @@ import {EcommerceAppBar} from './components/EcommerceAppBar';
 // }));
 
 export default function CartPage() {
-    let cartItems = [new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample(), new prodExample()]
+    let cartItems = [exampleProduct(), exampleProduct(), exampleProduct()];
 
     const [total, setTotal] = React.useState(0);
     React.useEffect(() => {
         let totalPrice = 0;
         cartItems.forEach((item) => {
-            totalPrice += item.price * item.quantity;
+            totalPrice += item.price * item.stock;
         });
         setTotal(totalPrice);
     }, [cartItems]);
 
+    const navigate = useNavigate();
+
     return (
         <div>
-            <EcommerceAppBar appBarTitle='My Cart'/>
+            <EcommerceAppBar appBarTitle='My Cart' />
             <Grid container spacing={3}>
                 <Grid item xs={12} md={8}>
                     {cartItems.map((item) => (
@@ -42,10 +45,10 @@ export default function CartPage() {
                                         {item.name}
                                     </Typography>
                                     <Typography variant="body1" color="textSecondary" component="p">
-                                        Quantity: {item.quantity}
+                                        Quantity: {item.stock}
                                     </Typography>
                                     <Typography variant="h6" component="h4">
-                                        Price: ${item.price * item.quantity}
+                                        Price: ${item.price * item.stock}
                                     </Typography>
                                 </CardContent>
                             </Card>
@@ -59,14 +62,7 @@ export default function CartPage() {
                                 Total: ${total}
                             </Typography>
                             <Button variant="contained" color="primary" onClick={async () => {
-                                await axios({
-                                    method: 'GET',
-                                    url: `${apiGatewayUrl}/api/product/all`
-                                }).then(response => {
-                                    console.log(response);
-                                }).catch((error) => {
-                                    console.log(error);
-                                });
+                                navigate("/checkout");
                             }}>
                                 Checkout
                             </Button>

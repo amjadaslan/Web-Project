@@ -3,11 +3,11 @@ import {
     Grid, Card, CardMedia, CardContent, Typography, Button,
 } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import { prodExample } from './Catalog';
 
 import {EcommerceAppBar} from './components/EcommerceAppBar';
 import axios from 'axios';
 import { apiGatewayUrl } from './components/constants';
+import { exampleProduct } from '../debug';
 
 // const useStyles = makeStyles({
 //     card: {
@@ -30,7 +30,7 @@ import { apiGatewayUrl } from './components/constants';
 export default function ProductPage() {
     axios.defaults.withCredentials = true
 
-    let product = new prodExample();
+    let product = exampleProduct();
 
     return (
         <div>
