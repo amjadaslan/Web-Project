@@ -32,12 +32,18 @@ function App() {
 
   const [appBarTitle, setAppBarTitle] = useState<string>("");
 
+  const initializer = async () => {
+    const fetchRes = await fetchProducts(setAllProducts);
+    if (fetchRes != null) {
+      return fetchCart(fetchRes, setAllCartItems);
+    }
+
+  }
+
   useEffect(() => {
     //TODO: What to do if one of these fails??
     fetchUserInfo(setUserInfo).then(() => setIsLoading(false));
-    fetchProducts(setAllProducts).then(() => {
-      fetchCart(allProducts, setAllCartItems);
-    });
+    initializer();
     fetchOrders(setallOrders);
   }, []);
 
