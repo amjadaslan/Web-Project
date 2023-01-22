@@ -56,10 +56,10 @@ export const ProductDetailsDialog: FC<ProductDetailsDialogProps> = ({ isOpen, se
                     <Grid container spacing={3}>
                         {DialogTextField("Product Name", productName, setProductName, true)}
                         {DialogDropDown("Category", category, setCategory)}
-                        {DialogTextField("Description", existingProduct?.description || "", setDescription)}
-                        {DialogTextField("Price", existingProduct?.price || 0, setPrice, true, true)}
-                        {DialogTextField("Stock", existingProduct?.stock || 0, setStock, true, true, false)}
-                        {DialogTextField("Image Url", existingProduct?.name || "", setImageUrl)}
+                        {DialogTextField("Description", description, setDescription)}
+                        {DialogTextField("Price", price, setPrice, true, true)}
+                        {DialogTextField("Stock", stock, setStock, true, true, false)}
+                        {DialogTextField("Image Url", imageUrl, setImageUrl)}
                     </Grid>
                 </DialogContent>
                 <DialogActions>

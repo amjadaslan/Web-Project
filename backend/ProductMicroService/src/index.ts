@@ -66,6 +66,7 @@ const protectedRout = (req: Request, res: Response) => {
 
     // Verify JWT token
     const user = verifyJWT(token);
+    console.log(token);
     console.log(`my name is ${user.userId}`)
     if (!user) {
         res.statusCode = 401;
