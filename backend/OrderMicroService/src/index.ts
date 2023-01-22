@@ -252,11 +252,11 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
     const customerName = req.body.name;
 
     //address data from body
-    const streetAddress = req.body.streetAddress;
+    const streetAddress = req.body.address;
     const city = req.body.city;
     const state = req.body.state;
     const country = req.body.country;
-    const zipCode = req.body.zipCode;
+    const zipCode = req.body.zip;
 
     //coupon if available
     const coupon = req.body.coupon;
@@ -278,10 +278,10 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
       }
     }
 
-    const cc = req.body.cc;
-    const holder = req.body.holder;
-    const cvv = req.body.holder;
-    const exp = req.body.exp;
+    const cc = req.body.cardNumber;
+    const holder = req.body.cardHolder;
+    const cvv = req.body.cvv;
+    const exp = req.body.expiryDate;
     let charge = couponVal === -1 ? cart.total : cart.total - couponVal;
     if (charge < 0) charge = 0;
 

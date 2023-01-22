@@ -122,7 +122,7 @@ app.put('/api/cart/', function (req: RequestWithId_Permission, res: Response) {
 });
 
 
-app.delete('/api/cart/item/', function (req: RequestWithId_Permission, res: Response) {
+app.put('/api/cart/item/', function (req: RequestWithId_Permission, res: Response) {
     removeCartItem(req, res, req.actualId);
 });
 
