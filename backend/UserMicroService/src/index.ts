@@ -133,11 +133,21 @@ app.get('/api/user/:userId/permission', function (req: RequestWithPermission, re
 
 app.get('/api/user/:userId/username', function (req: RequestWithPermission, res) { getUsername(req, res, req.params.userId); });
 
-app.post('/api/user/logout', function (req: RequestWithPermission, res) {
-  res.clearCookie('token');
-});
+app.post('/api/user/logout' , function (req: RequestWithPermission, res) {logoutFunc(req,res);});
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
+
+const logoutFunc = async (req: RequestWithPermission, res: Response) => {
+  
+  let cookies = req.headers.cookie.split('; ');
+  const token = cookies.find(str => str.startsWith("token")).substring("token=".length);
+  try{await userService.addtokentoBlackList(token);}catch(err){
+    res.statusCode = 500;
+    res.end();
+    return;
+  }
+  res.clearCookie('token');
+};
 
 const getQuestion = async (req: RequestWithPermission, res: Response, username: string) => {
   console.log(username);

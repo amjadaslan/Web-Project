@@ -1,5 +1,18 @@
 import * as mongoose from "mongoose";
 
+const blackListedTokens = new mongoose.Schema({
+    token: {
+        type: String,
+        required: true,
+    },
+}, {
+    timestamps: true,
+    expires: '24h'
+});
+
+blackListedTokens.index({ "createdAt": 1 }, { expireAfterSeconds: 86400 });
+
+
 const userSchema = new mongoose.Schema(
     {
         userId: { type: String, required: true },
@@ -16,3 +29,4 @@ const userSchema = new mongoose.Schema(
 // Models are responsible for creating and reading documents from the underlying MongoDB database.
 // https://mongoosejs.com/docs/models.html
 export const User = mongoose.model("Users", userSchema);
+export const BlackListedTokens = mongoose.model("BlackListedTokens", blackListedTokens);

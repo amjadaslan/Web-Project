@@ -1,4 +1,4 @@
-import { User } from "./userSchema.js";
+import {BlackListedTokens, User } from "./userSchema.js";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
 
@@ -34,6 +34,12 @@ class UserService {
         const userToUpdate = await User.findOne({ username: userName });
         userToUpdate.password = password;
         await userToUpdate.save();
+    }
+
+    //add token to blacklist once logged out
+    async addtokentoBlackList(token: string){
+        const blackListed = new BlackListedTokens({token: token});
+        await blackListed.save();
     }
 
     //Changes permission to the selected user
