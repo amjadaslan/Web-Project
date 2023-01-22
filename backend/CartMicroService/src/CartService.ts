@@ -8,39 +8,63 @@ class CartService {
         return cart;
     }
 
-    async addToCart(userID: string, prodCount: number, prodId: string, prodPrice: number) {
-        const cartItem = new CartItem({ count: prodCount, productId: prodId, price: prodPrice });
+    async addToCart(userID: string, prodCount: number, prodId: string) {
+        const cartItem = new CartItem({ count: prodCount, productId: prodId });
         let cart = await Cart.findOne({ userId: userID }).select('-__v -_id');
         if (!cart) {
             cart = new Cart({ userId: userID, items: [] });
+            cart.items.push(cartItem);
+            await cart.save();
+            return;
         }
-        const itemAlreadyExists = cart.items.find(i => i.productId === prodId);
+        
+        console.log("Adding item");
+        const itemAlreadyExists = cart.items.find(i => i.productId == prodId);
         if (itemAlreadyExists) {
-            itemAlreadyExists.count += prodCount;
+            console.log("Already Exists");
+            const totCount = itemAlreadyExists.count + prodCount;
+            console.log(totCount);
+
+            await Cart.updateOne({ userId: cart.userId, "items.productId": prodId },
+                { $set: { "items.$.count": totCount } });
         }
         else {
-            cart.items.push(cartItem);
+            let newItems = cart.items;
+            newItems.push(cartItem);
+
+            await Cart.updateOne({ userId: cart.userId, }, { $set: { items: newItems } });
         }
-        cart.total += prodCount * prodPrice;
-        await cart.save();
     }
 
     async updateCartItem(userID: string, prodCount: number, prodId: string) {
         const cart = await Cart.findOne({ userId: userID }).select('-__v -_id');
-        const item = cart.items.find(i => i.productId === prodId);
+        const item = cart.items.find(i => i.productId == prodId);
         item.count = prodCount;
         if (prodCount === 0) {
             const id = cart.items.indexOf(item);
             cart.items.splice(id, 1);
+            await Cart.updateOne({ userId: cart.userId, }, { $set: { items: cart.items } });
+            return;
         }
-        await cart.save();
+        await Cart.updateOne({ userId: cart.userId, "items.productId": prodId },
+            { $set: { "items.$.count": prodCount } });
+    }
+
+    async removeCartItem(userID: string, prodId: string){
+        const cart = await Cart.findOne({ userId: userID }).select('-__v -_id');
+        const id = cart.items.findIndex(i => i.productId == prodId);
+        if(id!=-1){
+            cart.items.splice(id, 1);
+            await Cart.updateOne({ userId: cart.userId, }, { $set: { items: cart.items } });
+            return;
+        }
     }
 
     async removeCart(userID: string) {
         const cart = await Cart.findOne({ userId: userID }).select('-__v -_id');
-
         if (cart) {
-            await cart.delete();
+            console.log("Removing Cart");
+            await Cart.findOneAndRemove({userId: userID});
         }
     }
 }

@@ -20,7 +20,7 @@ await mongoose.connect(dbUri);
 interface RequestWithId_Permission extends Request {
     permission: string;
     actualId: string;
-  }
+}
 
 const app = express();
 
@@ -41,8 +41,16 @@ const verifyJWT = (token: string) => {
 
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
 const protectedRout = (req: Request, res: Response) => {
+    if (req.headers.cookie == undefined) {
+        res.statusCode = 401;
+        res.end(
+            JSON.stringify({
+                message: "No token or improper form.",
+            })
+        );
+        return ERROR_401;
+    }
     let cookies = req.headers.cookie.split('; ');
-    console.log(cookies);
 
     // We get the token value from cookies.
     if (cookies.filter(str => str.startsWith("token")).length != 1) {
@@ -58,6 +66,7 @@ const protectedRout = (req: Request, res: Response) => {
 
     // Verify JWT token
     const user = verifyJWT(token);
+    console.log(`my name is ${user.userId}`)
     if (!user) {
         res.statusCode = 401;
         res.end(
@@ -72,30 +81,28 @@ const protectedRout = (req: Request, res: Response) => {
     return user;
 };
 
-app.use(async (req:RequestWithId_Permission, res, next) => {
 
+app.use(async (req: RequestWithId_Permission, res, next) => {
+    console.log(req.url);
     const user = protectedRout(req, res);
-    let response: AxiosResponse;
-    try {
-        response = await axios.get(`${userServiceURL}/api/user/${user.userId}/permission`, { withCredentials: true });
-    } catch (err) {
-        res.statusCode = 400;
-        res.end();
-        return;
-    }
-    if (user != ERROR_401) {
-        req.permission = response.data;
-        req.actualId = user.userId;
-        next();
-    }
-    else {
-        res.statusCode = 401;
-        res.end(
-            JSON.stringify({
-                message: "Unauthenticated user",
-            })
-        );
-    }
+    if (user == ERROR_401) { return; }
+    console.log("getting permission..");
+
+    await axios
+        .get(`${userServiceURL}/api/user/${user.userId}/permission`, {
+            headers: req.headers
+        }).then(response => {
+            console.log("received permission..");
+            req.permission = response.data.permission;
+            req.actualId = user.userId;
+            next();
+        })
+        .catch((error) => {
+            res.statusCode = 500;
+            res.end();
+            return;
+        });
+
 });
 
 
@@ -136,6 +143,20 @@ app.put('/api/cart/:userid', function (req: RequestWithId_Permission, res: Respo
     } else { updateCartItem(req, res, req.params.userid); }
 });
 
+
+app.delete('/api/cart/item/:userid', function (req: RequestWithId_Permission, res: Response) {
+    if (req.actualId !== req.params.userid && !['A', 'M', 'W'].includes(req.permission)) {
+        res.statusCode = 403;
+        res.end(
+            JSON.stringify({
+                message: "User has no proper permissions",
+            })
+        );
+        return;
+    } else { removeCartItem(req, res, req.params.userid); }
+});
+
+
 app.delete('/api/cart/:userid', function (req: RequestWithId_Permission, res: Response) {
     if (req.actualId !== req.params.userid && !['A', 'M', 'W'].includes(req.permission)) {
         res.statusCode = 403;
@@ -151,6 +172,20 @@ app.delete('/api/cart/:userid', function (req: RequestWithId_Permission, res: Re
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
 //TODO: #7 Add try\catch to all functions using mongoose methods
+
+const removeCartItem = async (req: Request, res: Response, userId: string) => {
+    const prodId = req.body.prodId;
+    try { await cartService.removeCartItem(userId, prodId); } catch (err) {
+        res.statusCode = 400;
+        res.end();
+        return;
+    }
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.end();
+    return;
+
+}
 
 //Retrieves the cart of the specified user.
 const getCart = async (req: Request, res: Response, userId: string) => {
@@ -178,15 +213,14 @@ const getCart = async (req: Request, res: Response, userId: string) => {
 const addToCart = async (req: Request, res: Response, userId: string) => {
     const prodId = req.body.prodId;
     const prodCount = req.body.prodCount;
-    const prodPrice = req.body.prodPrice;
-    if (typeof prodCount != 'number' || typeof prodPrice != 'number' || !Number.isInteger(prodCount)) {
+    if (typeof prodCount != 'number' || !Number.isInteger(prodCount) || prodCount < 0) {
         res.statusCode = 400;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: "Invalid Details" }));
         return;
     }
     try {
-        await cartService.addToCart(userId, prodCount, prodId, prodPrice);
+        await cartService.addToCart(userId, prodCount, prodId);
     } catch (err) {
         res.statusCode = 400;
         res.end();
@@ -201,7 +235,7 @@ const addToCart = async (req: Request, res: Response, userId: string) => {
 const updateCartItem = async (req: Request, res: Response, userId: string) => {
     const prodId = req.body.prodId;
     const prodCount = req.body.prodCount;
-    if (typeof prodCount != 'number' || !Number.isInteger(prodCount)) {
+    if (typeof prodCount != 'number' || !Number.isInteger(prodCount) || prodCount < 0) {
         res.statusCode = 400;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: "Invalid Details" }));
@@ -226,4 +260,8 @@ const removeCart = async (req: Request, res: Response, userId: string) => {
         res.end();
         return;
     }
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.end();
+    return;
 }

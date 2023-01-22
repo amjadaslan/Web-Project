@@ -21,13 +21,13 @@ class OrderService {
         return order;
     }
 
-    async createCoupon({key, value}){
+    async createCoupon(key: string, value:number){
         const coupon = new Coupon({key: key,value:value});
         await coupon.save();
         return coupon;
     }
 
-    async validateCoupon({key}){
+    async validateCoupon(key: string){
         const coupon = await Coupon.findOne({ key: key }).select('-__v -_id');
         return coupon?coupon.value:-1;
     }

@@ -6,7 +6,7 @@ import { DBPASS, DBUSERNAME, ERROR_401 } from "./const.js";
 import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import cookieParser from 'cookie-parser';
-
+import cors from 'cors';
 
 interface RequestWithPermission_userId extends Request {
   permission: string;
@@ -32,8 +32,17 @@ const verifyJWT = (token: string) => {
 
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
 const protectedRout = (req: Request, res: Response) => {
+  console.log(req.headers.cookie);
+  if (req.headers.cookie == undefined) {
+    res.statusCode = 401;
+    res.end(
+      JSON.stringify({
+        message: "No token or improper form.",
+      })
+    );
+    return ERROR_401;
+  }
   let cookies = req.headers.cookie.split('; ');
-  console.log(cookies);
 
   // We get the token value from cookies.
   if (cookies.filter(str => str.startsWith("token")).length != 1) {
@@ -49,6 +58,7 @@ const protectedRout = (req: Request, res: Response) => {
 
   // Verify JWT token
   const user = verifyJWT(token);
+  console.log(`my name is ${user.userId}`)
   if (!user) {
     res.statusCode = 401;
     res.end(
@@ -69,72 +79,132 @@ app.use(cookieParser());
 
 app.use(bodyParser.json());
 
-app.use(async (req: RequestWithPermission_userId, res, next) => {
+app.use(cors({
+  origin: '*',
+  credentials: true
+}));
 
+app.use(async (req: RequestWithPermission_userId, res, next) => {
+  console.log(req.url);
   const user = protectedRout(req, res);
-  let response: AxiosResponse;
-  try {
-    response = await axios.get(`${userServiceURL}/api/user/${user.userId}/permission`, { withCredentials: true });
-  } catch (err) {
-    res.statusCode = 400;
-    res.end();
-    return;
-  }
-  if (user != ERROR_401) {
-    req.permission = response.data;
-    req.userId = user.userId;
-    next();
-  }
-  else {
-    res.statusCode = 401;
-    res.end(
-      JSON.stringify({
-        message: "Unauthenticated user",
-      })
-    );
-  }
+  if (user == ERROR_401) { return; }
+  console.log("getting permission..");
+
+  await axios
+    .get(`${userServiceURL}/api/user/${user.userId}/permission`, {
+      headers: req.headers
+    }).then(response => {
+      console.log("received permission..");
+      req.permission = response.data.permission;
+      req.userId = user.userId;
+      next();
+    })
+    .catch((error) => {
+      res.statusCode = 500;
+      res.end();
+      return;
+    });
+
 });
 
 
 const port = 3003;
 
-app.get('/api/order/:orderId', function (req: RequestWithPermission_userId, res: Response) {if (!['A', 'M', 'W'].includes(req.permission)) {
-  res.statusCode = 403;
-  res.end(
+app.post('/api/order/coupon', function (req: RequestWithPermission_userId, res: Response) {
+  console.log("Creating a coupon!");
+  if (!['A'].includes(req.permission)) {
+    res.statusCode = 403;
+    res.end(
       JSON.stringify({
-          message: "User has no proper permissions",
+        message: "User has no proper permissions",
       })
-  );
-  return;
-} else { getOrder(req, res, req.params.orderId);} });
+    );
+    return;
+  } else {
+    createCoupon(req, res);
+  }
+});
 
-app.post('/api/order/:userId', function (req: RequestWithPermission_userId, res: Response) { if (req.userId !== req.params.userid) {
-  res.statusCode = 403;
-  res.end(
+app.get('/api/order/:orderId', function (req: RequestWithPermission_userId, res: Response) {
+  if (!['A', 'M', 'W'].includes(req.permission)) {
+    res.statusCode = 403;
+    res.end(
       JSON.stringify({
-          message: "User has no proper permissions",
+        message: "User has no proper permissions",
       })
-  );
-  return;
-} else {createOrder(req, res, req.params.userId);} });
+    );
+    return;
+  } else { getOrder(req, res, req.params.orderId); }
+});
 
-app.put('/api/order/:orderId', function (req: RequestWithPermission_userId, res: Response) {if (!['A', 'M', 'W'].includes(req.permission)) {
-  res.statusCode = 403;
-  res.end(
+app.post('/api/order/:userId', function (req: RequestWithPermission_userId, res: Response) {
+  if (req.userId !== req.params.userId) {
+    res.statusCode = 403;
+    res.end(
       JSON.stringify({
-          message: "User has no proper permissions",
+        message: "User has no proper permissions",
       })
-  );
-  return;
-} else { markAsDelivered(req, res, req.params.orderId); }});
+    );
+    return;
+  } else { createOrder(req, res, req.params.userId); }
+});
+
+app.get('/api/order/coupon/:key', async function (req: RequestWithPermission_userId, res: Response) {
+  try {
+    let val = await orderService.validateCoupon(req.params.key);
+    if (val === -1) {
+      res.statusCode = 404;
+      res.end();
+      return;
+    }
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ value: val }));
+    res.end()
+  }
+  catch (err) {
+    res.statusCode = 500;
+    res.end();
+    return;
+  }
+});
+
+
+
+app.put('/api/order/:orderId', function (req: RequestWithPermission_userId, res: Response) {
+  if (!['A', 'M', 'W'].includes(req.permission)) {
+    res.statusCode = 403;
+    res.end(
+      JSON.stringify({
+        message: "User has no proper permissions",
+      })
+    );
+    return;
+  } else { markAsDelivered(req, res, req.params.orderId); }
+});
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
+const createCoupon = async (req: Request, res: Response) => {
+  let coupon = req.body;
+  try {
+    await orderService.createCoupon(coupon.key, coupon.value);
+  } catch (err) {
+    res.statusCode = 500;
+    res.end();
+    return;
+  }
+  res.statusCode = 201;
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify(coupon));
+  return;
+
+};
 
 const getOrder = async (req: Request, res: Response, orderId: string) => {
   let order;
   try { order = await orderService.getOrder(orderId); } catch (err) {
-    res.statusCode = 400;
+    res.statusCode = 500;
     res.end();
     return;
   }
@@ -153,7 +223,7 @@ const getOrder = async (req: Request, res: Response, orderId: string) => {
 
 //TODO: #23 Fix createOrder edge cases
 const createOrder = async (req: Request, res: Response, userId: string) => {
-
+  console.log("Creating Order...");
   let order;
   try {
     //grab customer's name using his id
@@ -187,17 +257,23 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
         return;
       }
     }
-    
+
     const cc = req.body.cc;
     const holder = req.body.holder;
     const cvv = req.body.holder;
     const exp = req.body.exp;
-    const charge = couponVal === -1?cart.total:cart.total-couponVal;
+    let charge = couponVal === -1 ? cart.total : cart.total - couponVal;
+    if (charge < 0) charge = 0;
 
     //TODO: #22 send payment request via api call to hammerheadprovider
-    try{
-      await axios.post('https://www.cs-wsp.net/_functions/pay',{cc,holder,cvv,exp,charge});
-    }catch(err){}
+    try {
+      await axios.post('https://www.cs-wsp.net/_functions/pay', { cc, holder, cvv, exp, charge });
+    } catch (err) {
+      res.statusCode = 500;
+      res.setHeader("Content-Type", "application/json");
+      res.end({ message: "Server error! Order could not be created." });
+      return;
+    }
 
     //creates an order into mongodb
     order = await orderService.createOrder({ customerName, streetAddress, apartment, city, state, country, zipCode });
@@ -214,7 +290,7 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
       const productRes = await axios.get(`${process.env.PRODUCT}/api/product/${item.productId}`);
       const product = productRes.data.product;
       const newStock = product.stock - item.count;
-      await axios.put(`${process.env.PRODUCT}/api/product/${item.productId}`, { newStock });
+      await axios.put(`${process.env.PRODUCT}/api/product/${item.productId}`, { stock: newStock });
     }
     await axios.delete(`${process.env.CART}/api/cart/${userId}`);
   } catch (err) {
