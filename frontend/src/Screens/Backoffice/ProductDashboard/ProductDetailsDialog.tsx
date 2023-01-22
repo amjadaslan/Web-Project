@@ -56,7 +56,7 @@ export const ProductDetailsDialog: FC<ProductDetailsDialogProps> = ({ isOpen, se
                     <Grid container spacing={3}>
                         {DialogTextField("Product Name", productName, setProductName, true)}
                         {DialogDropDown("Category", category, setCategory)}
-                        {DialogTextField("Description", description, setDescription)}
+                        {DialogTextField("Description", description, setDescription, false, false, false, true)}
                         {DialogTextField("Price", price, setPrice, true, true)}
                         {DialogTextField("Stock", stock, setStock, true, true, false)}
                         {DialogTextField("Image Url", imageUrl, setImageUrl)}
@@ -73,7 +73,7 @@ export const ProductDetailsDialog: FC<ProductDetailsDialogProps> = ({ isOpen, se
 
 }
 
-function DialogTextField(label: string, value: any, onChange: (x: any) => void, isHalf: boolean = false, isNumeric: boolean = false, allowDecimals: boolean = true): JSX.Element {
+function DialogTextField(label: string, value: any, onChange: (x: any) => void, isHalf: boolean = false, isNumeric: boolean = false, allowDecimals: boolean = true, isMultiline: boolean = false): JSX.Element {
     const processedLabel = label.replaceAll(" ", "").toLowerCase();
 
     let processedOnChange: (val: any) => void;
@@ -98,6 +98,7 @@ function DialogTextField(label: string, value: any, onChange: (x: any) => void, 
             type={isNumeric ? 'number' : "text"}
             onChange={(val) => { processedOnChange(val); }}
             required
+            multiline={isMultiline}
             id={processedLabel}
             name={processedLabel}
             label={label}
