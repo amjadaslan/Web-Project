@@ -106,6 +106,12 @@ app.use(cookieParser());
 app.use(async (req: RequestWithUserInfo, res, next) => {
   console.log(req.url);
   //Protected route is not relevant for login/signup/forgot_password requests, as no token exists.
+  console.log(req.url.substring(req.url.length-5, 6));
+  console.log(req.url.substring(req.url.length-7, 8));
+  if(req.url.substring(req.url.length-5, 6)=="answer" || req.url.substring(req.url.length-7, 8)=="question"){
+    next();
+    return;
+  }
   if (['/api/user/:username/answer', '/api/user/login', '/api/user/signup', '/api/user/:username/question'].includes(req.url)) {
     next();
     return;

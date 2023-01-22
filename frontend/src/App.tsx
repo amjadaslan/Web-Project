@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Link, Routes, Navigate, HashRouter, useNavigate } from 'react-router-dom';
-import SignIn from './Screens/SignIn';
+import SignIn from './Screens/Signin/SignIn';
 import SignUp from './Screens/SignUp/SignUp';
 import { useEffect, useState } from 'react';
 import { LoadingPage } from './HomePage';
