@@ -102,7 +102,8 @@ app.use(async (req: RequestWithPermission, res, next) => {
         console.log("getting permission..");
         await axios
             .get(`${userServiceURL}/api/user/${user.userId}/permission`, {
-                headers: req.headers
+                headers: req.headers,
+                data: {}
             }).then(response => {
                 console.log("received permission..");
                 req.permission = response.data.permission;
@@ -158,7 +159,12 @@ const getProduct = async (req: Request, res: Response, idOrType: string) => {
 };
 
 const getAllProducts = async (req: Request, res: Response, idOrType: string) => {
-    const products = await productService.getAllProducts();
+    let products
+    try { products = await productService.getAllProducts(); } catch (err) {
+        res.statusCode = 400;
+        res.end();
+        return;
+    }
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(products));

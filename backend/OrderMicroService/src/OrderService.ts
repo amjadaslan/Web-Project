@@ -4,6 +4,11 @@ import { v4 as uuidv4 } from "uuid";
 
 class OrderService {
 
+    async getAllOrders(){
+        const orders = await Order.find({}).select('-__v -_id');
+        return orders;
+    }
+
     async getOrder(orderId: string){
         const order = await Order.findOne({ id: orderId }).select('-__v -_id');
         return order;

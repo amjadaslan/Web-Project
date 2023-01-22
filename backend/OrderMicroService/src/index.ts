@@ -15,6 +15,7 @@ interface RequestWithPermission_userId extends Request {
 
 const orderService = new OrderService();
 
+const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3005";
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
@@ -80,7 +81,7 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 app.use(cors({
-  origin: '*',
+  origin: apiGatewayUrl,
   credentials: true
 }));
 
@@ -92,7 +93,8 @@ app.use(async (req: RequestWithPermission_userId, res, next) => {
 
   await axios
     .get(`${userServiceURL}/api/user/${user.userId}/permission`, {
-      headers: req.headers
+      headers: req.headers,
+      data: {}
     }).then(response => {
       console.log("received permission..");
       req.permission = response.data.permission;
@@ -109,6 +111,18 @@ app.use(async (req: RequestWithPermission_userId, res, next) => {
 
 
 const port = 3003;
+
+app.get('/api/order/all', function (req: RequestWithPermission_userId, res: Response) {
+  if (!['A', 'M', 'W'].includes(req.permission)) {
+    res.statusCode = 403;
+    res.end(
+      JSON.stringify({
+        message: "User has no proper permissions",
+      })
+    );
+    return;
+  } else { getAllOrders(req, res); }
+});
 
 app.post('/api/order/coupon', function (req: RequestWithPermission_userId, res: Response) {
   console.log("Creating a coupon!");
@@ -172,7 +186,7 @@ app.get('/api/order/coupon/:key', async function (req: RequestWithPermission_use
 
 
 app.put('/api/order/:orderId', function (req: RequestWithPermission_userId, res: Response) {
-  if (!['A', 'M', 'W'].includes(req.permission)) {
+  if (!['A'].includes(req.permission)) {
     res.statusCode = 403;
     res.end(
       JSON.stringify({
@@ -200,6 +214,19 @@ const createCoupon = async (req: Request, res: Response) => {
   return;
 
 };
+
+const getAllOrders = async (req: Request, res: Response) => {
+  let orders;
+  try { orders = await orderService.getAllOrders(); } catch (err) {
+    res.statusCode = 500;
+    res.end();
+    return;
+  }
+  res.statusCode = 200;
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify(orders));
+  return;
+}
 
 const getOrder = async (req: Request, res: Response, orderId: string) => {
   let order;
