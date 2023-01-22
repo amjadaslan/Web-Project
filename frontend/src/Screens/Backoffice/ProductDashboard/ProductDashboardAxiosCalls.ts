@@ -1,19 +1,21 @@
 import axios from "axios";
 import { Product } from "../../../Models/Product";
+import { apiGatewayUrl } from "../../components/constants";
 
 axios.defaults.withCredentials = true;
 
 export const AddProduct = async (product: Product) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("add")
+    console.log("adding a product..")
+    return await axios.post(`${apiGatewayUrl}/api/product`, product );
 }
 
-export const DeleteProduct = async(productId: string) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("delete")
+export const DeleteProduct = async (productId: string) => {
+    console.log("Removing a product");
+    return await axios.delete(`${apiGatewayUrl}/api/product/${productId}`);
 }
 
-export const EditProduct = async(modifiedProduct: Product) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("edit")
+export const EditProduct = async (modifiedProduct: Product) => {
+    console.log(modifiedProduct);
+    console.log("Editing a product");
+    return await axios.put(`${apiGatewayUrl}/api/product/${modifiedProduct.id}`,modifiedProduct);
 }
