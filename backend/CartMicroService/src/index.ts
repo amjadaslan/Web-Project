@@ -65,7 +65,6 @@ const protectedRout = (req: Request, res: Response) => {
 
     // Verify JWT token
     const user = verifyJWT(token);
-    console.log(`my name is ${user.userId}`)
     if (!user) {
         res.statusCode = 401;
         res.end(
@@ -83,7 +82,6 @@ const protectedRout = (req: Request, res: Response) => {
 
 app.use(async (req: RequestWithId_Permission, res, next) => {
     console.log(req.url);
-    console.log(req.headers);
     const user = protectedRout(req, res);
     if (user == ERROR_401) { return; }
     console.log("getting permission..");
@@ -131,6 +129,12 @@ app.delete('/api/cart/', function (req: RequestWithId_Permission, res: Response)
     removeCart(req, res, req.actualId);
 });
 
+app.use(function (req: Request, res: Response) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: 'Route not found!s' }));
+    return;
+});
+
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
 //TODO: #7 Add try\catch to all functions using mongoose methods
@@ -154,7 +158,6 @@ const getCart = async (req: Request, res: Response, userId: string) => {
     let cart;
     try {
         cart = await cartService.getCart(userId);
-        console.log(cart);
     } catch (err) {
 
         res.statusCode = 404;

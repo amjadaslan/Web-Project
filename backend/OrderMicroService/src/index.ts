@@ -38,7 +38,6 @@ const verifyJWT = (token: string) => {
 
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
 const protectedRout = (req: Request, res: Response) => {
-  console.log(req.headers.cookie);
   if (req.headers.cookie == undefined) {
     res.statusCode = 401;
     res.end(
@@ -64,7 +63,6 @@ const protectedRout = (req: Request, res: Response) => {
 
   // Verify JWT token
   const user = verifyJWT(token);
-  console.log(`my name is ${user.userId}`)
   if (!user) {
     res.statusCode = 401;
     res.end(
@@ -194,6 +192,12 @@ app.put('/api/order/:orderId', function (req: RequestWithPermission_userId, res:
   } else { markAsDelivered(req, res, req.params.orderId); }
 });
 
+app.use(function (req: Request, res: Response) {
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ message: 'Route not found!s' }));
+  return;
+});
+
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
 const createCoupon = async (req: Request, res: Response) => {
@@ -311,17 +315,21 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
     order = await orderService.createOrder({ customerName, streetAddress, city, state, country, zipCode });
 
     if (!order) {
-      res.statusCode = 400;
+      res.statusCode = 500;
       res.setHeader("Content-Type", "application/json");
       res.end({ message: "Error! Order could not be created." });
       return;
     }
 
     //TODO: #5 Update stock for all items in order.
-
-    console.log("Updating Stock..");
-    await producerChannel.sendEvent(JSON.stringify({items:cart.items}));
-
+    try {
+      console.log("Updating Stock..");
+      await producerChannel.sendEvent(JSON.stringify({ items: cart.items }));
+    } catch (err) {
+      res.statusCode = 500;
+      res.end({ message: "Error! No enough left in stock." });
+      return;
+    }
     console.log("Removing Cart..");
     await axios.delete(`${cartServiceURL}/api/cart/`, { headers: req.headers });
   } catch (err) {

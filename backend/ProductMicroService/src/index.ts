@@ -67,8 +67,6 @@ const protectedRout = (req: Request, res: Response) => {
 
     // Verify JWT token
     const user = verifyJWT(token);
-    console.log(token);
-    console.log(`my name is ${user.userId}`)
     if (!user) {
         res.statusCode = 401;
         res.end(
@@ -129,6 +127,12 @@ app.put('/api/product/:id', bodyParser.json(), function (req: RequestWithPermiss
 
 app.delete('/api/product/:id', function (req: RequestWithPermission, res: Response) { removeProduct(req, res, req.params.id); });
 
+app.use(function (req: Request, res: Response) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: 'Route not found!s' }));
+    return;
+});
+
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
 
@@ -173,12 +177,10 @@ const getAllProducts = async (req: Request, res: Response, idOrType: string) => 
 
 const createProduct = async (req: RequestWithPermission, res: Response) => {
     console.log('Creating a product');
-    console.log(req.permission);
     if (["A", "M"].includes(req.permission)) {
         // Parse request body as JSON
         try {
             let { name, category, description, price, stock, image } = req.body;
-            console.log(req.body);
             if (!name || !category || !description || !price || !stock || !image || typeof price != 'number' || typeof stock != 'number' || !Number.isInteger(stock) || stock < 0 || price < 0 || price > 1000 || !validCategories.includes(category)) {
 
                 res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -240,7 +242,6 @@ const updateProduct = async (req: RequestWithPermission, res: Response, id: stri
         else {
 
             try {
-                console.log(req.body);
                 const { name, category, description, price, stock, image } = req.body;
                 if ((!name && !category && !description && !price && !stock && !image) ||
                     (price && (typeof price != 'number' || price < 0 || price > 1000)) ||
@@ -342,7 +343,6 @@ const consumeMessages = async () => {
 
             console.log("updating Stock");
             let cart = JSON.parse(msg.content.toString())
-            console.log(cart);
             for (let item of cart.items) {
                 const product = await productService.getProductById(item.productId);
                 const newStock = product.stock - item.count;
