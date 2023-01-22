@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import bodyParser from "body-parser";
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
-import { DBPASS, DBUSERNAME, ERROR_401 } from "./const.js";
+import { DBUSERNAME, ERROR_401 } from "./const.js";
 import ProductService from "./ProductService.js";
 import cors from 'cors';
 import axios, { AxiosResponse } from "axios";
@@ -28,7 +28,7 @@ const productService = new ProductService();
 const frontEndUrl = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000";
 const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3005";
 
-const dbPass = process.env.DBPASS || DBPASS;
+const dbPass = process.env.DBPASS;
 
 const dbUri = `mongodb+srv://${DBUSERNAME}:${dbPass}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);
@@ -323,7 +323,7 @@ const removeProduct = async (req: RequestWithPermission, res: Response, id: stri
 
 };
 
-const amqpKey = process.env.AMQPKey || "amqps://smbargni:48QYI_S6HQEbaLS7Q5i-ly4vbcwDNmXU@sparrow.rmq.cloudamqp.com/smbargni";
+const amqpKey = process.env.AMQPKey;
 
 const consumeMessages = async () => {
     try {

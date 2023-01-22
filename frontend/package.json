@@ -1,6 +1,7 @@
 {
   "name": "frontend",
   "version": "0.1.0",
+  "homepage": "https://mohammadbadir.github.io/WebProject/",
   "private": true,
   "dependencies": {
     "@emotion/css": "^11.10.5",
@@ -17,6 +18,7 @@
     "@types/react-dom": "^18.0.10",
     "axios": "^1.2.2",
     "cookie-parser": "^1.4.6",
+    "gh-pages": "^5.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^6.6.2",
@@ -26,6 +28,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
