@@ -1,0 +1,20 @@
+{
+  "name": "Web Project",
+  "version": "1.0.0",
+  "scripts": {
+    "build-apiGateway": "tsc -p ./backend/APIGateway/",
+    "build-cart": "tsc -p ./backend/CartMicroService/",
+    "build-order": "tsc -p ./backend/OrderMicroService/",
+    "build-product": "tsc -p ./backend/ProducttMicroService/",
+    "build-user": "tsc -p ./backend/UserMicroService/",
+    "start-apiGateway": "node ./backend/APIGateway/dist/index.js",
+    "start-cart": "node ./backend/CartMicroService/dist/index.js",
+    "start-order": "node ./backend/OrderMicroService/dist/index.js",
+    "start-product": "node ./backend/ProducttMicroService/dist/index.js",
+    "start-user": "node ./backend/UserMicroService/dist/index.js"
+  },
+  "devDependencies": {
+    "tsc-watch": "^5.0.3",
+    "typescript": "^4.9.4"
+  }
+}
