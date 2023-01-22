@@ -14,8 +14,8 @@ class OrderService {
         return order;
     }
 
-    async createOrder({ customerName, streetAddress, apartment, city, state, country, zipCode }) {
-        const address = new Address({ streetAddress: streetAddress, apartment:apartment, city:city, state:state, country:country, zipCode:zipCode });
+    async createOrder({ customerName, streetAddress, city, state, country, zipCode }) {
+        const address = new Address({ streetAddress: streetAddress, city:city, state:state, country:country, zipCode:zipCode });
         const order = new Order({ id: uuidv4(), customerName: customerName, address: address });
         return order;
     }
