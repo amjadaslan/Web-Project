@@ -35,7 +35,7 @@ function App() {
   useEffect(() => {
     //TODO: What to do if one of these fails??
     fetchUserInfo(setUserInfo).then(() => setIsLoading(false));
-    fetchProducts(setAllProducts).then(()=>{
+    fetchProducts(setAllProducts).then(() => {
       fetchCart(allProducts, setAllCartItems);
     });
     fetchOrders(setallOrders);
@@ -51,7 +51,7 @@ function App() {
         <Link to="/productdashboard"> ProductDashboard </Link>
         <Link to="/orderdashboard"> OrderDashboard </Link>
       </nav>
-      {isLoading || appBarTitle=="" ? <></> : <EcommerceAppBar userInfo={userInfo} appBarTitle={appBarTitle} />}
+      {isLoading || appBarTitle == "" ? <></> : <EcommerceAppBar userInfo={userInfo} appBarTitle={appBarTitle} />}
       <Routes>
         <Route path="/" element={<LoadingPage isLoading={isLoading} setIsLoading={setIsLoading} />} />
         <Route path="/signin" element={<SignIn />} />

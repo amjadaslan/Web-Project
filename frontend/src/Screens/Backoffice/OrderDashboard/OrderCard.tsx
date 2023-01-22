@@ -19,14 +19,14 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
                 <Card>
                     <CardContent>
                         <Typography gutterBottom variant="h5" component="h3">
-                            {`ID: ${order.orderId}`}
+                            {`ID: ${order.id}`}
                         </Typography>
                         {secondaryTypography(`Customer: ${order.customerName}`)}
                         {secondaryTypography(`Address: ${order.address}`)}
                         {secondaryTypography(`Status: ${order.status}`)}
                     </CardContent>
                     <CardActions>
-                        <Button onClick={() => handleMarkAsDelivered(order.orderId)}>Mark As Delivered</Button>
+                        <Button onClick={() => handleMarkAsDelivered(order.id)}>Mark As Delivered</Button>
                     </CardActions>
                 </Card>
             </Paper>

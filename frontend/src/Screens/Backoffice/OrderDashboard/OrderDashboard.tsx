@@ -12,13 +12,13 @@ export interface OrderDashboardProps {
 }
 
 export const OrderDashboard: FC<OrderDashboardProps> = ({ setAppBarTitle, allOrders, setAllOrders }) => {
-    setAppBarTitle('Orders Dashboard | BACKOFFICE');
+    setAppBarTitle('Orders Dashboard');
 
     return <div>
         <Box>
             <Box>
                 <Grid container spacing={2} padding={2}>
-                    {allOrders.map(order => <OrderCard key={order.orderId} order={order} />)}
+                    {allOrders.map(order => <OrderCard key={order.id} order={order} />)}
                 </Grid>
             </Box>
         </Box>

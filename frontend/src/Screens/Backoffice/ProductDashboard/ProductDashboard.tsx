@@ -15,7 +15,7 @@ export interface ProductDashboardProps {
 
 export const ProductDashboard: FC<ProductDashboardProps> = ({ setAppBarTitle, allProducts, setAllProducts }) => {
     const [openDialog, setOpenDialog] = useState<boolean>(false);
-    setAppBarTitle('Products Dashboard | BACKOFFICE');
+    setAppBarTitle('Products Dashboard');
 
     return <div>
         <Box>

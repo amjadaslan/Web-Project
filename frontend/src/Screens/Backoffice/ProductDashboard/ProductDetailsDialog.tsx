@@ -9,10 +9,10 @@ export interface ProductDetailsDialogProps {
     isOpen: boolean,
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>,
     existingProduct: Product | null,
-    onConfirm : (prd: Product) => Promise<any>
+    onConfirm: (prd: Product) => Promise<any>
 }
 
-export const ProductDetailsDialog: FC<ProductDetailsDialogProps> = ({ isOpen, setIsOpen, existingProduct, onConfirm}) => {
+export const ProductDetailsDialog: FC<ProductDetailsDialogProps> = ({ isOpen, setIsOpen, existingProduct, onConfirm }) => {
 
     const handleConfirm = async () => {
         await onConfirm(new Product(existingProduct?.id || "", productName, category, description, price, stock, imageUrl))
@@ -29,6 +29,10 @@ export const ProductDetailsDialog: FC<ProductDetailsDialogProps> = ({ isOpen, se
     const handleClose = () => {
         setIsOpen(false);
         restoreFieldValues();
+
+        setNameError(false);
+        setDescError(false);
+        setImageError(false);
     }
 
     const restoreFieldValues = () => {
@@ -38,6 +42,10 @@ export const ProductDetailsDialog: FC<ProductDetailsDialogProps> = ({ isOpen, se
         setPrice(existingProduct?.price || 0);
         setStock(existingProduct?.stock || 0);
         setImageUrl(existingProduct?.image || "");
+
+        setNameError(false);
+        setDescError(false);
+        setImageError(false);
     }
 
     const [productName, setProductName] = useState<string>(existingProduct?.name || "");
@@ -46,6 +54,22 @@ export const ProductDetailsDialog: FC<ProductDetailsDialogProps> = ({ isOpen, se
     const [price, setPrice] = useState<number>(existingProduct?.price || 0);
     const [stock, setStock] = useState<number>(existingProduct?.stock || 0);
     const [imageUrl, setImageUrl] = useState<string>(existingProduct?.image || "");
+
+    const [nameError, setNameError] = useState<boolean>(false);
+    const [priceError, setPriceError] = useState<boolean>(false);
+    const [descError, setDescError] = useState<boolean>(false);
+    const [imageError, setImageError] = useState<boolean>(false);
+
+    const StringNotEmpty = (x: string) => x.replaceAll(" ", "").replaceAll("\n", "").replaceAll("\t", "").length > 0;
+    const stringEmptyErrorMessage = "Text cannot be empty!";
+
+    const BetweenZeroAndThousand = (x: number) => x >= 0 && x <= 1000;
+    const outOfRangeErrorMessage = "Price must be between 0 and 1000!"
+
+    const AlwaysTrue = (x: any) => true;
+
+    const initConditions = !(StringNotEmpty(productName) && StringNotEmpty(description) && BetweenZeroAndThousand(price) && StringNotEmpty(imageUrl))
+    const errorExists =  initConditions || (nameError || priceError || descError || imageError);
 
     return (
         <div>
@@ -56,17 +80,17 @@ export const ProductDetailsDialog: FC<ProductDetailsDialogProps> = ({ isOpen, se
                         Please enter the relevant details for your product
                     </DialogContentText>
                     <Grid container spacing={3}>
-                        {DialogTextField("Product Name", productName, setProductName, true)}
+                        {DialogTextField(nameError, setNameError, StringNotEmpty, stringEmptyErrorMessage, "Product Name", productName, setProductName, true)}
                         {DialogDropDown("Category", category, setCategory)}
-                        {DialogTextField("Description", description, setDescription, false, false, false, true)}
-                        {DialogTextField("Price", price, setPrice, true, true)}
-                        {DialogTextField("Stock", stock, setStock, true, true, false)}
-                        {DialogTextField("Image Url", imageUrl, setImageUrl)}
+                        {DialogTextField(descError, setDescError, StringNotEmpty, stringEmptyErrorMessage, "Description", description, setDescription, false, false, false, true)}
+                        {DialogTextField(priceError, setPriceError, BetweenZeroAndThousand, outOfRangeErrorMessage, "Price", price, setPrice, true, true)}
+                        {DialogTextField(false, (x: any) => { }, AlwaysTrue, "", "Stock", stock, setStock, true, true, false)}
+                        {DialogTextField(imageError, setImageError, StringNotEmpty, stringEmptyErrorMessage, "Image Url", imageUrl, setImageUrl)}
                     </Grid>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={handleConfirm}>Confirm</Button>
+                    <Button onClick={handleConfirm} disabled={errorExists}>Confirm</Button>
                 </DialogActions>
             </Dialog>
         </div>
@@ -75,21 +99,26 @@ export const ProductDetailsDialog: FC<ProductDetailsDialogProps> = ({ isOpen, se
 
 }
 
-function DialogTextField(label: string, value: any, onChange: (x: any) => void, isHalf: boolean = false, isNumeric: boolean = false, allowDecimals: boolean = true, isMultiline: boolean = false): JSX.Element {
+function DialogTextField(hasError: boolean, setHasError: React.Dispatch<React.SetStateAction<boolean>>, predicate: (x: any) => boolean, helperText: string, label: string, value: any, onChange: (x: any) => void, isHalf: boolean = false, isNumeric: boolean = false, allowDecimals: boolean = true, isMultiline: boolean = false): JSX.Element {
     const processedLabel = label.replaceAll(" ", "").toLowerCase();
 
     let processedOnChange: (val: any) => void;
     if (isNumeric && !allowDecimals) {
         processedOnChange = (val: any) => {
+            val.target.value = Math.max(0, Number(val.target.value)).toString();
             val.target.value = Math.ceil(Number(val.target.value)).toString()
+            setHasError(!predicate(Number(val.target.value)));
             onChange(Number(val.target.value));
         }
     } else if (isNumeric) {
         processedOnChange = (val: any) => {
+            val.target.value = Math.max(0, Number(val.target.value)).toString();
+            setHasError(!predicate(Number(val.target.value)));
             onChange(Number(val.target.value));
         }
     } else {
         processedOnChange = (val: any) => {
+            setHasError(!predicate(val.target.value));
             onChange(val.target.value);
         }
     }
@@ -97,6 +126,8 @@ function DialogTextField(label: string, value: any, onChange: (x: any) => void, 
     return <Grid item xs={12} sm={isHalf ? 6 : false}>
         <TextField
             value={value}
+            error={hasError}
+            helperText={hasError ? helperText : ""}
             type={isNumeric ? 'number' : "text"}
             onChange={(val) => { processedOnChange(val); }}
             required
