@@ -4,8 +4,15 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import { FC } from 'react';
+import { ShippingDetails } from '../../Models/ShippingDetails';
 
-export default function AddressForm() {
+export interface AddressFormProps {
+    shippingDetails: ShippingDetails,
+    setShippingDetails: React.Dispatch<React.SetStateAction<ShippingDetails>>
+}
+
+export const AddressForm: FC<AddressFormProps> = ({ shippingDetails, setShippingDetails }) => {
     return (
         <React.Fragment>
             <Typography variant="h6" gutterBottom>
@@ -18,6 +25,8 @@ export default function AddressForm() {
                         id="firstName"
                         name="firstName"
                         label="First name"
+                        value={shippingDetails.firstName}
+                        onChange={(val) => setShippingDetails(shippingDetails.UpdateFirstName(val.target.value))}
                         fullWidth
                         autoComplete="given-name"
                         variant="standard"
@@ -29,6 +38,8 @@ export default function AddressForm() {
                         id="lastName"
                         name="lastName"
                         label="Last name"
+                        value={shippingDetails.lastName}
+                        onChange={(val) => setShippingDetails(shippingDetails.UpdateLastName(val.target.value))}
                         fullWidth
                         autoComplete="family-name"
                         variant="standard"
@@ -40,6 +51,8 @@ export default function AddressForm() {
                         id="address1"
                         name="address1"
                         label="Address line"
+                        value={shippingDetails.address}
+                        onChange={(val) => setShippingDetails(shippingDetails.UpdateAddress(val.target.value))}
                         fullWidth
                         autoComplete="shipping address-line1"
                         variant="standard"
@@ -51,6 +64,8 @@ export default function AddressForm() {
                         id="city"
                         name="city"
                         label="City"
+                        value={shippingDetails.city}
+                        onChange={(val) => setShippingDetails(shippingDetails.UpdateCity(val.target.value))}
                         fullWidth
                         autoComplete="shipping city"
                         variant="standard"
@@ -61,6 +76,8 @@ export default function AddressForm() {
                         id="state"
                         name="state"
                         label="State / Province"
+                        value={shippingDetails.state}
+                        onChange={(val) => setShippingDetails(shippingDetails.UpdateState(val.target.value))}
                         fullWidth
                         variant="standard"
                     />
@@ -71,6 +88,8 @@ export default function AddressForm() {
                         id="zip"
                         name="zip"
                         label="Zip / Postal code"
+                        value={shippingDetails.zip}
+                        onChange={(val) => setShippingDetails(shippingDetails.UpdateZip(val.target.value))}
                         fullWidth
                         autoComplete="shipping postal-code"
                         variant="standard"
@@ -82,6 +101,8 @@ export default function AddressForm() {
                         id="country"
                         name="country"
                         label="Country"
+                        value={shippingDetails.country}
+                        onChange={(val) => setShippingDetails(shippingDetails.UpdateCountry(val.target.value))}
                         fullWidth
                         autoComplete="shipping country"
                         variant="standard"

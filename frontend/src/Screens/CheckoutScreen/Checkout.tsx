@@ -12,30 +12,46 @@ import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import AddressForm from './AddressForm';
-import PaymentForm from './PaymentForm';
 import { Review } from './Review';
-import {EcommerceAppBar} from '../components/EcommerceAppBar';
+import { EcommerceAppBar } from '../components/EcommerceAppBar';
 import { PaymentDetails } from '../../Models/PaymentDetails';
+import { CartItem } from '../../Models/Cart';
+import { FC, useState } from 'react';
+import { PaymentForm } from './PaymentForm';
+import { ShippingDetails } from '../../Models/ShippingDetails';
+import { AddressForm } from './AddressForm';
 
 const steps = ['Shipping address', 'Payment details', 'Review your order'];
 
-function getStepContent(step: number) {
-    switch (step) {
-        case 0:
-            return <AddressForm />;
-        case 1:
-            return <PaymentForm />;
-        case 2:
-            return <Review paymentDetails={new PaymentDetails('MasterCard', 'Amjad Aslan', 'xxxx-xxxx-xxxx-1234', '04/2024')} />;
-        default:
-            throw new Error('Unknown step');
-    }
-}
-
 const theme = createTheme();
 
-export default function Checkout() {
+export interface CheckoutProps {
+    cartItems: CartItem[]
+}
+
+export const Checkout: FC<CheckoutProps> = ({ cartItems }) => {
+    // const [cardType, setCardType] = useState<string>("VISA");
+    // const [cardHolder, setCardHolder] = useState<string>("");
+    // const [cardNumber, setCardNumber] = useState<string>("");
+    // const [expiryDate, setExpiryDate] = useState<string>("");
+    // const [coupon, setCoupon] = useState<string>("");
+
+    const [paymentDetails, setPaymentDetails] = useState<PaymentDetails>(new PaymentDetails());
+    const [shippingDetails, setShippingDetails] = useState<ShippingDetails>(new ShippingDetails());
+
+    function getStepContent(step: number) {
+        switch (step) {
+            case 0:
+                return <AddressForm shippingDetails={shippingDetails} setShippingDetails={setShippingDetails} />;
+            case 1:
+                return <PaymentForm paymentDetails={paymentDetails} setPaymentDetails={setPaymentDetails} />;
+            case 2:
+                return <Review paymentDetails={paymentDetails} shippingDetails={shippingDetails} cartItems={cartItems} />;
+            default:
+                throw new Error('Unknown step');
+        }
+    }
+
     const [currentStep, setCurrentStep] = React.useState(0);
 
     const handleNext = () => {

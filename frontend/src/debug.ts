@@ -1,3 +1,4 @@
+import { CartItem } from "./Models/Cart"
 import { Order } from "./Models/Order"
 import { Product } from "./Models/Product"
 
@@ -7,4 +8,8 @@ export const exampleProduct = () => {
 
 export const exampleOrder = () => {
     return new Order(Math.floor(Math.random()*100000).toString(), "Some Customer", "Some Address", "Pending");
+}
+
+export const exampleCartItem = () => {
+    return new CartItem(exampleProduct(), 5);
 }
