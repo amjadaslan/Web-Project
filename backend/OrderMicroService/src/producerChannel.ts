@@ -21,7 +21,7 @@ export class ProducerChannel {
     // publish the message to the exchange
     await this.channel.publish(exchange, "", Buffer.from(msg));
     console.log(
-      `Publisher >>> | message "${msg}" published to exchange "${exchange}"`
+      `Pro >>> | message "${msg}" published to exchange "${exchange}"`
     );
   }
 }
