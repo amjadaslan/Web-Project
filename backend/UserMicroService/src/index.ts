@@ -6,7 +6,7 @@ import { DBUSERNAME, DBPASS, ERROR_401 } from "./const.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
-import UserService from "./userService.js";
+import UserService from "./UserService.js";
 import mongoose, { RootQuerySelector } from "mongoose";
 import bodyParser from "body-parser";
 
