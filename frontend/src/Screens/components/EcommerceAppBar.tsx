@@ -32,7 +32,7 @@ export const EcommerceAppBar: React.FC<EcommerceAppBarProps> = ({ userInfo, appB
         `${userInfo.username} | ${permissionMap.get(userInfo.permission)}`;
 
     function makeButton(label: string, path: string) {
-        return <Box sx={{ px: 2 }} >
+        return <Box sx={{ px: 1 }} >
             <Button variant="contained" color='info' onClick={() => navigate(path)}>{label}</Button>
         </Box>;
     }

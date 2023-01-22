@@ -5,11 +5,12 @@ import {
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 
 import axios from 'axios';
-import { apiGatewayUrl } from './components/constants';
-import { exampleProduct } from '../debug';
-import { Product } from '../Models/Product';
+import { apiGatewayUrl } from '../components/constants';
+import { exampleProduct } from '../../debug';
+import { Product } from '../../Models/Product';
 import { FC } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { AddToCart } from './ProductPageAxiosCalls';
 
 // const useStyles = makeStyles({
 //     card: {
@@ -44,7 +45,11 @@ export const ProductPage: FC<ProductPageProps> = ({ setAppBarTitle, productsInCa
     }
 
     const product = productsInCart.find((cartProduct) => cartProduct.id == productId) || exampleProduct();
-    setAppBarTitle(`Product Page - ${product.name}`);
+    setAppBarTitle("Product Details");
+
+    const handleAddToCart = async (productId: string, quantity: number)=>{
+        await AddToCart(productId, quantity);
+    }
 
     return (
         <div>
@@ -80,13 +85,7 @@ export const ProductPage: FC<ProductPageProps> = ({ setAppBarTitle, productsInCa
                                 color="primary"
                                 startIcon={<AddShoppingCartIcon />}
                                 //name, category, description, price, stock, image
-                                onClick={async () => {
-                                    await axios({
-                                        method: 'POST',
-                                        url: `${apiGatewayUrl}/api/product`,
-                                        data: {}
-                                    })
-                                }}
+                                onClick={()=>handleAddToCart(product.id, 1)}
                             >
                                 Add to cart
                             </Button>

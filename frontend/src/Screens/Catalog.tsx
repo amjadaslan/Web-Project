@@ -47,7 +47,7 @@ export const Catalog: FC<CatalogProps> = ({ setAppBarTitle, allProducts }) => {
                   <Typography gutterBottom variant="body2" color="textSecondary" component="p">
                     {product.category}
                   </Typography>
-                  <Button variant="contained" color="primary">
+                  <Button variant="contained" color="primary" onClick={()=>navigate(`/productpage/${product.id}`)}>
                     View
                   </Button>
                 </CardContent>

@@ -43,7 +43,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = ({ cartItem }) => {
                             </CardActions>
                         </Grid>
                         <Grid xs={12} sm={6} item>
-                            {quantityField(product.name, quantity, product.stock, setQuantity)}
+                            {quantityField(product.id, quantity, product.stock, setQuantity)}
                         </Grid>
                     </Grid>
                 </Card>

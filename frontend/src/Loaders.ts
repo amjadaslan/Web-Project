@@ -10,15 +10,18 @@ axios.defaults.withCredentials = true;
 
 export const fetchProducts = async (setAllProducts: React.Dispatch<React.SetStateAction<Product[]>>) => {
     //setAllProducts([exampleProduct(), exampleProduct(), exampleProduct()])
+    let tempProducts : Product[] | null = null;
     await axios({
         method: 'GET',
         url: `${apiGatewayUrl}/api/product/all`
     }).then(response => {
-        console.log(response.data);
+        tempProducts = response.data.map((obj: any) => obj as Product);
         setAllProducts(response.data.map((obj: any) => obj as Product));
     }).catch((error) => {
         console.log(error);
     });
+
+    return tempProducts;
 }
 
 export const fetchOrders = async (setAllOrders: React.Dispatch<React.SetStateAction<Order[]>>) => {
@@ -35,6 +38,7 @@ export const fetchOrders = async (setAllOrders: React.Dispatch<React.SetStateAct
 }
 
 export const fetchCart = async (products: Product[], setAllCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>) => {
+    console.log(products);
     await axios.get(`${apiGatewayUrl}/api/cart/`).then((response) => {
         console.log(response.data);
         if (!response.data) {
