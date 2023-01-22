@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import * as bcrypt from "bcrypt";
 import express from "express";
-import { DBUSERNAME, DBPASS, ERROR_401 } from "./const.js";
+import { DBUSERNAME, ERROR_401 } from "./const.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
@@ -12,7 +12,7 @@ import bodyParser from "body-parser";
 
 import * as dotenv from "dotenv";
 dotenv.config();
-const dbPass = process.env.DBPASS || DBPASS;
+const dbPass = process.env.DBPASS;
 const salt = process.env.SALT || 10;
 
 const dbUri = `mongodb+srv://${DBUSERNAME}:${dbPass}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
@@ -145,19 +145,23 @@ app.get('/api/user/:username/question', function (req: RequestWithUserInfo, res)
 
 app.post('/api/user/:username/answer', bodyParser.json(), function (req: RequestWithUserInfo, res) { validateQuestion_ChangePassword(req, res, req.params.username); });
 
-app.post('/api/user/:username/answer', function (req: RequestWithUserInfo, res) { bodyParser.json(); validateQuestion_ChangePassword(req, res, req.params.username); });
-
 app.get('/api/user/:userId/permission', function (req: RequestWithUserInfo, res) { getPermission(req, res, req.params.userId); });
 
 app.get('/api/user/:userId/username', function (req: RequestWithUserInfo, res) { getUsername(req, res, req.params.userId); });
 
 app.post('/api/user/logout', function (req: RequestWithUserInfo, res) {
-  res.clearCookie('token');
+  try {
+    res.clearCookie('token');
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end();
+    return;
+  }
 });
 
 app.use(function (req: Request, res: Response) {
   res.writeHead(404, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ message: 'Route not found!s' }));
+  res.end(JSON.stringify({ message: 'Route not found!' }));
   return;
 });
 

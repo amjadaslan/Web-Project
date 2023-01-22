@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import CartService from "./CartService.js";
-import { DBPASS, DBUSERNAME, ERROR_401 } from "./const.js";
+import {  DBUSERNAME, ERROR_401 } from "./const.js";
 import jwt from "jsonwebtoken";
 import axios, { AxiosResponse } from "axios";
 import cookieParser from 'cookie-parser';
@@ -14,7 +14,7 @@ const cartService = new CartService();
 
 
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
-const dbPass = process.env.DBPASS || DBPASS;
+const dbPass = process.env.DBPASS ;
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
 
 const dbUri = `mongodb+srv://${DBUSERNAME}:${dbPass}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
