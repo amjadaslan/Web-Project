@@ -19,6 +19,9 @@ const producerChannel = new ProducerChannel();
 
 const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3005";
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
+const cartServiceURL = process.env.CART_SERVICE_URL || "http://localhost:3002";
+const productServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3001";
+
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const dbUri = `mongodb+srv://${DBUSERNAME}:${DBPASS}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);
@@ -35,7 +38,6 @@ const verifyJWT = (token: string) => {
 
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
 const protectedRout = (req: Request, res: Response) => {
-  console.log(req.headers.cookie);
   if (req.headers.cookie == undefined) {
     res.statusCode = 401;
     res.end(
@@ -61,7 +63,6 @@ const protectedRout = (req: Request, res: Response) => {
 
   // Verify JWT token
   const user = verifyJWT(token);
-  console.log(`my name is ${user.userId}`)
   if (!user) {
     res.statusCode = 401;
     res.end(
@@ -191,6 +192,12 @@ app.put('/api/order/:orderId', function (req: RequestWithPermission_userId, res:
   } else { markAsDelivered(req, res, req.params.orderId); }
 });
 
+app.use(function (req: Request, res: Response) {
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ message: 'Route not found!s' }));
+  return;
+});
+
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
 const createCoupon = async (req: Request, res: Response) => {
@@ -260,15 +267,20 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
 
     //coupon if available
     const coupon = req.body.coupon;
+
+    console.log("Validating Coupon..");
     let couponVal = await orderService.validateCoupon(coupon);
 
+
+    console.log("getting Cart...");
     let cartRes: AxiosResponse;
-    cartRes = await axios.get(`${process.env.CART}/api/cart/${userId}`);
-    const cart = cartRes.data.cart;
+    cartRes = await axios.get(`${cartServiceURL}/api/cart/`, { headers: req.headers });
+    const cart = cartRes.data;
     //TODO: #2 Verify Item in stock before placing an order
+    console.log("Validating Quantity..");
     for (let item of cart.items) {
-      const productRes = await axios.get(`${process.env.PRODUCT}/api/product/${item.productId}`);
-      const product = productRes.data.product;
+      const productRes = await axios.get(`${productServiceURL}/api/product/${item.productId}`, { headers: req.headers });
+      const product = productRes.data;
       if (product.stock < item.count) {
         //TODO: #3 find a proper error code for each failed task
         res.statusCode = 400;
@@ -286,6 +298,8 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
     if (charge < 0) charge = 0;
 
     //TODO: #22 send payment request via api call to hammerheadprovider
+
+    console.log("Performing Payment..");
     try {
       await axios.post('https://www.cs-wsp.net/_functions/pay', { cc, holder, cvv, exp, charge });
     } catch (err) {
@@ -295,22 +309,29 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
       return;
     }
 
+
+    console.log("Creating Order Instance..");
     //creates an order into mongodb
     order = await orderService.createOrder({ customerName, streetAddress, city, state, country, zipCode });
 
     if (!order) {
-      res.statusCode = 400;
+      res.statusCode = 500;
       res.setHeader("Content-Type", "application/json");
       res.end({ message: "Error! Order could not be created." });
       return;
     }
 
     //TODO: #5 Update stock for all items in order.
-
-    await producerChannel.sendEvent(cart.items);
-
-
-    await axios.delete(`${process.env.CART}/api/cart/${userId}`);
+    try {
+      console.log("Updating Stock..");
+      await producerChannel.sendEvent(JSON.stringify({ items: cart.items }));
+    } catch (err) {
+      res.statusCode = 500;
+      res.end({ message: "Error! No enough left in stock." });
+      return;
+    }
+    console.log("Removing Cart..");
+    await axios.delete(`${cartServiceURL}/api/cart/`, { headers: req.headers });
   } catch (err) {
     res.statusCode = 400;
     res.end();

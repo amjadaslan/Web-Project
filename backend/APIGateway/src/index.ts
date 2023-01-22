@@ -50,7 +50,6 @@ const protectedRout = (req: IncomingMessage, res: ServerResponse) => {
     return ERROR_401;
   }
   let cookies = req.headers.cookie.split('; ');
-  console.log(cookies);
 
   // We get the token value from cookies.
   if (cookies.filter(str => str.startsWith("token")).length != 1) {
@@ -90,14 +89,13 @@ apiGateway.use(cors({
 }))
 
 
-
+ 
 apiGateway.use(bodyParser.json());
 
 const connect = async (serviceType: string, serviceURL: string) => {
   apiGateway.use(`/api/${serviceType}`, async (req, res) => {
     try {
       console.log(req.url);
-      console.log(`${serviceURL}/api/${serviceType}${req.url}`)
       // Make the request to the microservice
       const response = await axios({
         method: req.method,
@@ -129,6 +127,12 @@ connect('order', orderServiceURL);
 
 //Call to ProductMicroService
 connect('product', productServiceURL);
+
+apiGateway.use(function (req: Request, res: Response) {
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ message: 'Route not found!s' }));
+  return;
+});
 
 //TODO: #9 Connect servers to the API Gateway
 

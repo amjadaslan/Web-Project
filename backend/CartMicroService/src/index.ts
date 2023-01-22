@@ -24,7 +24,6 @@ interface RequestWithId_Permission extends Request {
 
 const app = express();
 
-app.use(bodyParser.json());
 
 app.use(cookieParser());
 
@@ -66,7 +65,6 @@ const protectedRout = (req: Request, res: Response) => {
 
     // Verify JWT token
     const user = verifyJWT(token);
-    console.log(`my name is ${user.userId}`)
     if (!user) {
         res.statusCode = 401;
         res.end(
@@ -113,22 +111,28 @@ app.get('/api/cart/', function (req: RequestWithId_Permission, res: Response) {
     getCart(req, res, req.actualId);
 });
 
-app.post('/api/cart/', function (req: RequestWithId_Permission, res: Response) {
+app.post('/api/cart/', bodyParser.json(), function (req: RequestWithId_Permission, res: Response) {
     addToCart(req, res, req.actualId);
 });
 
-app.put('/api/cart/', function (req: RequestWithId_Permission, res: Response) {
+app.put('/api/cart/', bodyParser.json(), function (req: RequestWithId_Permission, res: Response) {
     updateCartItem(req, res, req.actualId);
 });
 
 
-app.put('/api/cart/item/', function (req: RequestWithId_Permission, res: Response) {
+app.put('/api/cart/item/', bodyParser.json(), function (req: RequestWithId_Permission, res: Response) {
     removeCartItem(req, res, req.actualId);
 });
 
 
 app.delete('/api/cart/', function (req: RequestWithId_Permission, res: Response) {
     removeCart(req, res, req.actualId);
+});
+
+app.use(function (req: Request, res: Response) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: 'Route not found!s' }));
+    return;
 });
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });

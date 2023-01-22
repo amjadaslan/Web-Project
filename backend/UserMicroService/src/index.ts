@@ -43,7 +43,6 @@ const verifyJWT = (token: string) => {
 
 // Middelware for all protected routes. You need to expend it, implement premissions and handle with errors.
 const protectedRout = (req: Request, res: Response) => {
-  console.log(req.headers.cookie);
   if (req.headers.cookie == undefined) {
     res.statusCode = 401;
     res.end(
@@ -54,7 +53,6 @@ const protectedRout = (req: Request, res: Response) => {
     return ERROR_401;
   }
   let cookies = req.headers.cookie.split('; ');
-  console.log(cookies);
 
   // We get the token value from cookies.
   if (cookies.filter(str => str.startsWith("token")).length != 1) {
@@ -69,7 +67,6 @@ const protectedRout = (req: Request, res: Response) => {
   const token = cookies.find(str => str.startsWith("token")).substring("token=".length);
   // Verify JWT token
   const user = verifyJWT(token);
-  console.log(`my name is ${user.userId}`)
   if (!user) {
     res.statusCode = 401;
     res.end(
@@ -145,6 +142,12 @@ app.get('/api/user/:userId/username', function (req: RequestWithUserInfo, res) {
 
 app.post('/api/user/logout', function (req: RequestWithUserInfo, res) {
   res.clearCookie('token');
+});
+
+app.use(function (req: Request, res: Response) {
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ message: 'Route not found!s' }));
+  return;
 });
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
@@ -309,7 +312,6 @@ const loginRoute = async (req: RequestWithUserInfo, res: Response) => {
   });
 
   /** check if this is right */
-  console.log(token)
   res.cookie('token', token, {
     httpOnly: true,
     sameSite: 'none',

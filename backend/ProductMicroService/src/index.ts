@@ -8,6 +8,7 @@ import ProductService from "./ProductService.js";
 import cors from 'cors';
 import axios, { AxiosResponse } from "axios";
 import cookieParser from 'cookie-parser';
+import * as amqp from "amqplib";
 
 
 axios.defaults.withCredentials = true;
@@ -66,8 +67,6 @@ const protectedRout = (req: Request, res: Response) => {
 
     // Verify JWT token
     const user = verifyJWT(token);
-    console.log(token);
-    console.log(`my name is ${user.userId}`)
     if (!user) {
         res.statusCode = 401;
         res.end(
@@ -89,15 +88,13 @@ const app = express();
 app.use(cookieParser());
 
 
-app.use(bodyParser.json());
-
 app.use(cors({
     origin: apiGatewayUrl,
     credentials: true
 }))
 
 app.use(async (req: RequestWithPermission, res, next) => {
-
+    console.log(req.url);
     const user = protectedRout(req, res);
     if (user != ERROR_401) {
         console.log("getting permission..");
@@ -124,11 +121,17 @@ app.get('/api/product/all', function (req: Request, res: Response) { getAllProdu
 
 app.get('/api/product/:idorType', function (req: RequestWithPermission, res: Response) { getProduct(req, res, req.params.idorType); });
 
-app.post('/api/product', function (req: RequestWithPermission, res: Response) { createProduct(req, res); });
+app.post('/api/product', bodyParser.json(), function (req: RequestWithPermission, res: Response) { createProduct(req, res); });
 
-app.put('/api/product/:id', function (req: RequestWithPermission, res: Response) { updateProduct(req, res, req.params.id); });
+app.put('/api/product/:id', bodyParser.json(), function (req: RequestWithPermission, res: Response) { updateProduct(req, res, req.params.id); });
 
 app.delete('/api/product/:id', function (req: RequestWithPermission, res: Response) { removeProduct(req, res, req.params.id); });
+
+app.use(function (req: Request, res: Response) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: 'Route not found!s' }));
+    return;
+});
 
 app.listen(port, () => { console.log(`Listening to port ${port}`) });
 
@@ -174,12 +177,10 @@ const getAllProducts = async (req: Request, res: Response, idOrType: string) => 
 
 const createProduct = async (req: RequestWithPermission, res: Response) => {
     console.log('Creating a product');
-    console.log(req.permission);
     if (["A", "M"].includes(req.permission)) {
         // Parse request body as JSON
         try {
             let { name, category, description, price, stock, image } = req.body;
-            console.log(req.body);
             if (!name || !category || !description || !price || !stock || !image || typeof price != 'number' || typeof stock != 'number' || !Number.isInteger(stock) || stock < 0 || price < 0 || price > 1000 || !validCategories.includes(category)) {
 
                 res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -241,7 +242,6 @@ const updateProduct = async (req: RequestWithPermission, res: Response, id: stri
         else {
 
             try {
-                console.log(req.body);
                 const { name, category, description, price, stock, image } = req.body;
                 if ((!name && !category && !description && !price && !stock && !image) ||
                     (price && (typeof price != 'number' || price < 0 || price > 1000)) ||
@@ -252,10 +252,11 @@ const updateProduct = async (req: RequestWithPermission, res: Response, id: stri
                     res.end(JSON.stringify({ message: 'Invalid Details' }));
                     return;
                 }
-                if(stock==0){
+                if (stock == 0) {
                     await productService.removeProduct(id);
-                }else{
-                await productService.updateProduct({ id, name, category, description, price, stock, image });}
+                } else {
+                    await productService.updateProduct({ id, name, category, description, price, stock, image });
+                }
             } catch (err) {
                 res.statusCode = 500;
                 res.end();
@@ -317,3 +318,43 @@ const removeProduct = async (req: RequestWithPermission, res: Response, id: stri
 
 
 };
+
+const consumeMessages = async () => {
+    try {
+        // connect to RabbitMQ
+        const conn = await amqp.connect(
+            "amqps://smbargni:48QYI_S6HQEbaLS7Q5i-ly4vbcwDNmXU@sparrow.rmq.cloudamqp.com/smbargni"
+        );
+        const channel = await conn.createChannel();
+
+        // create the exchange if it doesn't exist
+        const exchange = "order_exchange";
+        await channel.assertExchange(exchange, "fanout", { durable: false });
+
+        // create the queue if it doesn't exist
+        const queue = "order_queue";
+        await channel.assertQueue(queue, { durable: false });
+
+        // bind the queue to the exchange
+        await channel.bindQueue(queue, exchange, "");
+
+        // consume messages from the queue
+        await channel.consume(queue, async (msg) => {
+
+            console.log("updating Stock");
+            let cart = JSON.parse(msg.content.toString())
+            for (let item of cart.items) {
+                const product = await productService.getProductById(item.productId);
+                const newStock = product.stock - item.count;
+                await productService.updateProduct({ id: product.id, name: product.name, category: product.category, description: product.description, price: product.price, stock: newStock, image: product.image })
+            }
+
+            channel.ack(msg);
+        });
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+// start consuming messages
+consumeMessages();
