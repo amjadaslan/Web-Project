@@ -34,7 +34,7 @@ export const Review: React.FC<ReviewProps> = ({ paymentDetails, shippingDetails,
             </Typography>
             <List disablePadding>
                 {cartItems.map((cartItem) => (
-                    <ListItem key={cartItem.product.name} sx={{ py: 1, px: 0 }}>
+                    <ListItem key={cartItem.product.id} sx={{ py: 1, px: 0 }}>
                         <ListItemText primary={cartItem.product.name} secondary={`Quantity: ${cartItem.quantity}`} />
                         <Typography variant="body2">{`${cartItem.product.price * cartItem.quantity}$`}</Typography>
                     </ListItem>

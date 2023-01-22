@@ -20,6 +20,7 @@ import { FC, useState } from 'react';
 import { PaymentForm } from './PaymentForm';
 import { ShippingDetails } from '../../Models/ShippingDetails';
 import { AddressForm } from './AddressForm';
+import { MakeOrder } from './CheckoutAxiosCalls';
 
 const steps = ['Shipping address', 'Payment details', 'Review your order'];
 
@@ -54,8 +55,19 @@ export const Checkout: FC<CheckoutProps> = ({ cartItems }) => {
 
     const [currentStep, setCurrentStep] = React.useState(0);
 
-    const handleNext = () => {
-        setCurrentStep(currentStep + 1);
+    const handleNext = async () => {
+        if (currentStep == 2) {
+            await MakeOrder(shippingDetails, paymentDetails)
+                .then((_) => {
+                    setCurrentStep(currentStep + 1);
+                })
+                .catch((err) => {
+                    console.log("Error occured while creating order")
+                    console.log(err);
+                })
+        } else {
+            setCurrentStep(currentStep + 1);
+        }
     };
 
     const handleBack = () => {

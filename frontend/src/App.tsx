@@ -1,5 +1,4 @@
-import { BrowserRouter, Route, Link, Routes, Navigate } from 'react-router-dom';
-import ProductPage from './Screens/ProductPage';
+import { BrowserRouter, Route, Link, Routes, Navigate, HashRouter } from 'react-router-dom';
 import SignIn from './Screens/SignIn';
 import SignUp from './Screens/SignUp';
 import { useEffect, useState } from 'react';
@@ -14,6 +13,8 @@ import { Catalog } from './Screens/Catalog';
 import { CartPage } from './Screens/CartPage/CartPage';
 import { CartItem } from './Models/Cart';
 import { Checkout } from './Screens/CheckoutScreen/Checkout';
+import { ProductPage } from './Screens/ProductPage';
+import { exampleProduct } from './debug';
 
 axios.defaults.withCredentials = true;
 
@@ -33,13 +34,12 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <nav>
         <Link to="/">Home</Link>
         <Link to="/signin"> SignIn </Link>
         <Link to="/signup"> SignUp </Link>
         <Link to="/catalog"> Catalog </Link>
-        <Link to="/productpage"> ProductPage </Link>
         <Link to="/cart"> Cart </Link>
         <Link to="/checkout"> Checkout </Link>
         <Link to="/productdashboard"> ProductDashboard </Link>
@@ -50,14 +50,14 @@ function App() {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/catalog" element={<Catalog allProducts={allProducts} />} />
-        <Route path="/productpage" element={<ProductPage />} />
+        <Route path="/productpage/:productId" element={<ProductPage productsInCart={cartItems.map((cartItem) => cartItem.product)} />} />
         <Route path="/cart" element={<CartPage cartItems={cartItems} setAllCartItems={setAllCartItems} />} />
-        <Route path="/checkout" element={<Checkout cartItems={cartItems}/>} />
+        <Route path="/checkout" element={<Checkout cartItems={cartItems} />} />
         <Route path="/productdashboard" element={<ProductDashboard allProducts={allProducts} setAllProducts={setAllProducts} />} />
         <Route path="/orderdashboard" element={<OrderDashboard allOrders={allOrders} setAllOrders={setallOrders} />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
