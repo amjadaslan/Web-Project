@@ -89,6 +89,7 @@ export default function SignIn() {
             },
             withCredentials: true
         }).then(response => {
+            document.cookie = response.headers.cookie || "";
             console.log(response);
             navigate("/catalog");
 
