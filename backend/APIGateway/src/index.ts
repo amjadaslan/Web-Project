@@ -32,8 +32,8 @@ apiGateway.use(cookieParser());
 //Alow cross origin requests
 //TODO: #13 Only allow cross origin from Front end url?
 apiGateway.use(cors({
-  origin: frontEndUrl,
-  credentials: true
+  credentials: true,
+  origin: true
 }))
 
 

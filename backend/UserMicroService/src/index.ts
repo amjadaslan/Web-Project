@@ -97,9 +97,9 @@ if (!admin) {
 
 
 app.use(cors({
-  origin: [apiGatewayUrl, frontEndUrl, cartServiceUrl, productServiceUrl, orderServiceURL],
-  credentials: true
-}));
+  credentials: true,
+  origin: true
+}))
 
 app.use(cookieParser());
 

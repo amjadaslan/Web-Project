@@ -93,9 +93,9 @@ app.use(cookieParser());
 
 
 app.use(cors({
-    origin: apiGatewayUrl,
-    credentials: true
-}))
+    credentials: true,
+    origin: true
+  }))
 
 app.use(async (req: RequestWithPermission, res, next) => {
     console.log(req.url);
