@@ -22,13 +22,13 @@ interface RequestWithPermission extends Request {
 const validCategories = ["t-shirt", "hoodie", "hat", "necklace", "bracelet", "shoes", "pillow", "mug", "book", "puzzle", "cards"];
 const cartServiceURL = process.env.CART_SERVICE_URL || "http://localhost:3002";
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
-const secretKey = "6695b1a1d1ad8b3dfb4f41ee51674085"; //process.env.SECRET_KEY || "your_secret_key";
+const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const productService = new ProductService();
 
 const frontEndUrl = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000";
 const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3005";
 
-const dbPass = process.env.DBPASS || "Magic1234";
+const dbPass = process.env.DBPASS;
 
 const dbUri = `mongodb+srv://${DBUSERNAME}:${dbPass}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);

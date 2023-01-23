@@ -20,7 +20,7 @@ import { GetQuestionByUsername, VerifyAnswer } from './SigninAxiosCalls';
 
 const theme = createTheme();
 
-//axios.defaults.withCredentials = true;
+axios.defaults.withCredentials = true;
 
 export default function SignIn() {
     const navigate = useNavigate();
@@ -42,44 +42,6 @@ export default function SignIn() {
             return;
         }
 
-        // const testServer = axios.create({
-        //     baseURL: "https://api-gateway-server.onrender.com/api",
-        //     withCredentials: true
-        // });
-
-        // testServer.post(`/login`, {
-        //     username : "admin",
-        //     password: "admin"
-        // }).then(response =>{
-        //     console.log("Hi ten")
-        // }).catch(err=>{
-        //     console.log("Hi err")
-        // });
-
-        // axios.post(`https://wsp-project-api-gateway.onrender.com/api/user/login`, { username: "a", password: "a", withCredentials: true })
-        //     .then((res) => {
-        //         console.log("Then then")
-        //     })
-        //     .catch((err) => {
-        //         console.log("Error hi")
-        //     });
-
-        // await axios({
-        //     method: 'POST',
-        //     url: "https://wsp-project-api-gateway.onrender.com/api/user/login",
-        //     data: {
-        //         "username": username,
-        //         "password": password
-        //     },
-        //     withCredentials: true
-        // }).then(response => {
-        //     console.log(response);
-        //     navigate("/catalog");
-
-        // }).catch((error) => {
-        //     console.log(error);
-        // });
-
         await axios({
             method: 'POST',
             url: `${apiGatewayUrl}/api/user/login`,
@@ -89,7 +51,7 @@ export default function SignIn() {
             },
             withCredentials: true
         }).then(response => {
-            document.cookie = response.headers.cookie || "";
+            //document.cookie = response.headers.cookie || "";
             console.log(response);
             navigate("/catalog");
 

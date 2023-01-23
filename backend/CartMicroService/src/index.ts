@@ -14,8 +14,8 @@ const cartService = new CartService();
 
 
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
-const dbPass = process.env.DBPASS || "Magic1234";
-const secretKey = "6695b1a1d1ad8b3dfb4f41ee51674085"; //process.env.SECRET_KEY || "your_secret_key";
+const dbPass = process.env.DBPASS;
+const secretKey = process.env.SECRET_KEY || "your_secret_key";
 
 const dbUri = `mongodb+srv://${DBUSERNAME}:${dbPass}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);
