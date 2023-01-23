@@ -37,11 +37,13 @@ apiGateway.use(cors({
 }))
 
 
- 
+
 apiGateway.use(bodyParser.json());
 
 const connect = async (serviceType: string, serviceURL: string) => {
   apiGateway.use(`/api/${serviceType}`, async (req, res) => {
+    console.log(req.headers.cookie)
+
     try {
       console.log(req.url);
       // Make the request to the microservice
@@ -49,7 +51,9 @@ const connect = async (serviceType: string, serviceURL: string) => {
         method: req.method,
         url: `${serviceURL}/api/${serviceType}${req.url}`,
         data: req.body,
-        headers: req.headers
+        headers: {
+          cookie: req.headers.cookie
+        }
       });
 
       if (req.url == '/login') {

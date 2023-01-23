@@ -25,7 +25,7 @@ const cartServiceUrl = process.env.API_GATEWAY_URL || "http://localhost:3002";
 const orderServiceURL = process.env.API_GATEWAY_URL || "http://localhost:3003";
 
 
-const secretKey = process.env.SECRET_KEY || "your_secret_key";
+const secretKey = "6695b1a1d1ad8b3dfb4f41ee51674085"; //process.env.SECRET_KEY || "your_secret_key";
 const userService = new UserService();
 const app = express();
 const port = 3004;
