@@ -13,7 +13,7 @@ dotenv.config();
 axios.defaults.withCredentials = true;
 
 // TODO: You need to config SERCRET_KEY in render.com dashboard, under Environment section.
-const secretKey = process.env.SECRET_KEY || "your_secret_key";
+const secretKey = "6695b1a1d1ad8b3dfb4f41ee51674085"; //process.env.SECRET_KEY || "your_secret_key";
 const apiGateway = express();
 
 const port = process.env.PORT || 3005;
@@ -51,9 +51,10 @@ const connect = async (serviceType: string, serviceURL: string) => {
         method: req.method,
         url: `${serviceURL}/api/${serviceType}${req.url}`,
         data: req.body,
-        headers: {
-          cookie: req.headers.cookie
-        }
+        headers: req.headers
+        // headers: {
+        //   cookie: req.headers.cookie
+        // }
       });
 
       if (req.url == '/login') {

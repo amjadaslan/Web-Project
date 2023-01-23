@@ -42,19 +42,19 @@ export default function SignIn() {
             return;
         }
 
-        const testServer = axios.create({
-            baseURL: "https://api-gateway-server.onrender.com/api",
-            withCredentials: true
-        });
+        // const testServer = axios.create({
+        //     baseURL: "https://api-gateway-server.onrender.com/api",
+        //     withCredentials: true
+        // });
 
-        testServer.post(`/login`, {
-            username : "admin",
-            password: "admin"
-        }).then(response =>{
-            console.log("Hi ten")
-        }).catch(err=>{
-            console.log("Hi err")
-        });
+        // testServer.post(`/login`, {
+        //     username : "admin",
+        //     password: "admin"
+        // }).then(response =>{
+        //     console.log("Hi ten")
+        // }).catch(err=>{
+        //     console.log("Hi err")
+        // });
 
         // axios.post(`https://wsp-project-api-gateway.onrender.com/api/user/login`, { username: "a", password: "a", withCredentials: true })
         //     .then((res) => {
