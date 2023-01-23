@@ -51,10 +51,10 @@ const connect = async (serviceType: string, serviceURL: string) => {
         method: req.method,
         url: `${serviceURL}/api/${serviceType}${req.url}`,
         data: req.body,
-        headers: req.headers
-        // headers: {
-        //   cookie: req.headers.cookie
-        // }
+        // headers: req.headers
+        headers: {
+          cookie: req.headers.cookie
+        }
       });
 
       if (req.url == '/login') {
