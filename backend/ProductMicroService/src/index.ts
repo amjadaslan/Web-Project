@@ -28,7 +28,7 @@ const productService = new ProductService();
 const frontEndUrl = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000";
 const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3005";
 
-const dbPass = process.env.DBPASS;
+const dbPass = process.env.DBPASS || "Magic1234";
 
 const dbUri = `mongodb+srv://${DBUSERNAME}:${dbPass}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);

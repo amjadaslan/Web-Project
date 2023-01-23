@@ -20,7 +20,7 @@ import { GetQuestionByUsername, VerifyAnswer } from './SigninAxiosCalls';
 
 const theme = createTheme();
 
-axios.defaults.withCredentials = true;
+//axios.defaults.withCredentials = true;
 
 export default function SignIn() {
     const navigate = useNavigate();
@@ -42,13 +42,52 @@ export default function SignIn() {
             return;
         }
 
+        const testServer = axios.create({
+            baseURL: "https://api-gateway-server.onrender.com/api",
+            withCredentials: true
+        });
+
+        testServer.post(`/login`, {
+            username : "admin",
+            password: "admin"
+        }).then(response =>{
+            console.log("Hi ten")
+        }).catch(err=>{
+            console.log("Hi err")
+        });
+
+        // axios.post(`https://wsp-project-api-gateway.onrender.com/api/user/login`, { username: "a", password: "a", withCredentials: true })
+        //     .then((res) => {
+        //         console.log("Then then")
+        //     })
+        //     .catch((err) => {
+        //         console.log("Error hi")
+        //     });
+
+        // await axios({
+        //     method: 'POST',
+        //     url: "https://wsp-project-api-gateway.onrender.com/api/user/login",
+        //     data: {
+        //         "username": username,
+        //         "password": password
+        //     },
+        //     withCredentials: true
+        // }).then(response => {
+        //     console.log(response);
+        //     navigate("/catalog");
+
+        // }).catch((error) => {
+        //     console.log(error);
+        // });
+
         await axios({
             method: 'POST',
             url: `${apiGatewayUrl}/api/user/login`,
             data: {
                 "username": username,
                 "password": password
-            }
+            },
+            withCredentials: true
         }).then(response => {
             console.log(response);
             navigate("/catalog");
@@ -75,12 +114,12 @@ export default function SignIn() {
     const [fAnswer, setFAnswer] = useState<string>("");
     const [fPassword, setFPassword] = useState<string>("");
 
-    let editedHandleButton : (event: React.FormEvent<HTMLFormElement>)=>Promise<void>;
+    let editedHandleButton: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
 
-    if(pageState==0){
+    if (pageState == 0) {
         editedHandleButton = handleSubmit;
-    } else if(pageState==1){
-        editedHandleButton = async () => {await GetQuestionByUsername(fUserName, setFQuestion); setPageState(pageState+1);}
+    } else if (pageState == 1) {
+        editedHandleButton = async () => { await GetQuestionByUsername(fUserName, setFQuestion); setPageState(pageState + 1); }
     } else {
         editedHandleButton = async () => await VerifyAnswer(fUserName, fAnswer, fPassword);
     }
@@ -98,7 +137,7 @@ export default function SignIn() {
                 </Link>
             </Grid>
         </Grid>
-        </> : <></>;
+    </> : <></>;
 
     const buttonText = pageState == 0 ? "Sign in" : "Enter answer";
 

@@ -12,7 +12,7 @@ import bodyParser from "body-parser";
 
 import * as dotenv from "dotenv";
 dotenv.config();
-const dbPass = process.env.DBPASS;
+const dbPass = process.env.DBPASS || "Magic1234";
 const salt = process.env.SALT || 10;
 
 const dbUri = `mongodb+srv://${DBUSERNAME}:${dbPass}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;

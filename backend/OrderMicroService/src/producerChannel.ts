@@ -2,7 +2,7 @@ import * as amqp from "amqplib";
 import * as dotenv from "dotenv";
 dotenv.config();
 
-const amqpKey = process.env.AMQPKey ;
+const amqpKey = "amqps://smbargni:48QYI_S6HQEbaLS7Q5i-ly4vbcwDNmXU@sparrow.rmq.cloudamqp.com/smbargni";
 
 
 export class ProducerChannel {

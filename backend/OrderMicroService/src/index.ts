@@ -26,7 +26,7 @@ const cartServiceURL = process.env.CART_SERVICE_URL || "http://localhost:3002";
 const productServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3001";
 
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
-const dbPass = process.env.DBPASS ;
+const dbPass = process.env.DBPASS || "Magic1234";
 
 const dbUri = `mongodb+srv://${DBUSERNAME}:${dbPass}@cluster0.g83l9o2.mongodb.net/?retryWrites=true&w=majority`;
 await mongoose.connect(dbUri);
