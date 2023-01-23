@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import CartService from "./CartService.js";
-import {  DBUSERNAME, ERROR_401 } from "./const.js";
+import { DBUSERNAME, ERROR_401 } from "./const.js";
 import jwt from "jsonwebtoken";
 import axios, { AxiosResponse } from "axios";
 import cookieParser from 'cookie-parser';
@@ -93,8 +93,9 @@ app.use(async (req: RequestWithId_Permission, res, next) => {
 
     await axios
         .get(`${userServiceURL}/api/user/${user.userId}/permission`, {
-            headers: req.headers,
-            data: {}
+            headers: {
+                cookie: req.headers.cookie
+            }
         }).then(response => {
             console.log("received permission..");
             req.permission = response.data.permission;

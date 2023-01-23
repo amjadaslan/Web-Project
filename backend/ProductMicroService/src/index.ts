@@ -95,7 +95,7 @@ app.use(cookieParser());
 app.use(cors({
     credentials: true,
     origin: true
-  }))
+}))
 
 app.use(async (req: RequestWithPermission, res, next) => {
     console.log(req.url);
@@ -104,7 +104,9 @@ app.use(async (req: RequestWithPermission, res, next) => {
         console.log("getting permission..");
         await axios
             .get(`${userServiceURL}/api/user/${user.userId}/permission`, {
-                headers: req.headers,
+                headers: {
+                    cookie: req.headers.cookie
+                },
                 data: {}
             }).then(response => {
                 console.log("received permission..");

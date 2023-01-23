@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import OrderService from "./OrderService.js";
 import axios, { AxiosResponse } from "axios";
 import mongoose from "mongoose";
-import {  DBUSERNAME, ERROR_401 } from "./const.js";
+import { DBUSERNAME, ERROR_401 } from "./const.js";
 import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import cookieParser from 'cookie-parser';
@@ -98,7 +98,9 @@ app.use(async (req: RequestWithPermission_userId, res, next) => {
   console.log("getting permission..");
   await axios
     .get(`${userServiceURL}/api/user/${user.userId}/permission`, {
-      headers: req.headers
+      headers: {
+        cookie: req.headers.cookie
+      }
     }).then(response => {
       console.log("received permission..");
       req.permission = response.data.permission;
@@ -128,7 +130,7 @@ app.get('/api/order/all', function (req: RequestWithPermission_userId, res: Resp
   } else { getAllOrders(req, res); }
 });
 
-app.post('/api/order/coupon',bodyParser.json(), function (req: RequestWithPermission_userId, res: Response) {
+app.post('/api/order/coupon', bodyParser.json(), function (req: RequestWithPermission_userId, res: Response) {
   console.log("Creating a coupon!");
   if (!['A'].includes(req.permission)) {
     res.statusCode = 403;
@@ -155,7 +157,7 @@ app.get('/api/order/:orderId', function (req: RequestWithPermission_userId, res:
   } else { getOrder(req, res, req.params.orderId); }
 });
 
-app.post('/api/order/',bodyParser.json(), function (req: RequestWithPermission_userId, res: Response) {
+app.post('/api/order/', bodyParser.json(), function (req: RequestWithPermission_userId, res: Response) {
   createOrder(req, res, req.userId);
 });
 
