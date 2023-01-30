@@ -23,7 +23,7 @@ const producerChannel = new ProducerChannel();
 const apiGatewayUrl = process.env.API_GATEWAY_URL || "http://localhost:3005";
 const userServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3004";
 const cartServiceURL = process.env.CART_SERVICE_URL || "http://localhost:3002";
-const productServiceURL = process.env.USER_SERVICE_URL || "http://localhost:3001";
+const productServiceURL = process.env.PRODUCT_SERVICE_URL || "http://localhost:3001";
 
 const secretKey = process.env.SECRET_KEY || "your_secret_key";
 const dbPass = process.env.DBPASS;
