@@ -276,13 +276,17 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
 
 
     console.log("getting Cart...");
-    let cartRes: AxiosResponse;
-    cartRes = await axios.get(`${cartServiceURL}/api/cart/`, { headers: req.headers });
+    let cartRes: AxiosResponse
+    cartRes = await axios.get(`${cartServiceURL}/api/cart/`, { headers: {
+      cookie: req.headers.cookie
+  },});
     const cart = cartRes.data;
     //TODO: #2 Verify Item in stock before placing an order
     console.log("Validating Quantity..");
     for (let item of cart.items) {
-      const productRes = await axios.get(`${productServiceURL}/api/product/${item.productId}`, { headers: req.headers });
+      const productRes = await axios.get(`${productServiceURL}/api/product/${item.productId}`, { headers: {
+        cookie: req.headers.cookie
+    }, });
       const product = productRes.data;
       if (product.stock < item.count) {
         //TODO: #3 find a proper error code for each failed task
@@ -334,7 +338,9 @@ const createOrder = async (req: Request, res: Response, userId: string) => {
       return;
     }
     console.log("Removing Cart..");
-    await axios.delete(`${cartServiceURL}/api/cart/`, { headers: req.headers });
+    await axios.delete(`${cartServiceURL}/api/cart/`, { headers: {
+      cookie: req.headers.cookie
+  }, });
   } catch (err) {
     res.statusCode = 400;
     res.end();
