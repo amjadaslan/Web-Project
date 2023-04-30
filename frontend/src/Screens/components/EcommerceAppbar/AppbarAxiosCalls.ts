@@ -4,5 +4,5 @@ import { apiGatewayUrl } from "../constants";
 axios.defaults.withCredentials = true;
 
 export const SendLogoutRequest = async () => {
-    return await axios.put(`${apiGatewayUrl}/api/user/logout`);
+    return await axios.post(`${apiGatewayUrl}/api/user/logout`);
 }
