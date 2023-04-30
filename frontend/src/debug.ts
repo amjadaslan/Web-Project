@@ -7,7 +7,7 @@ export const exampleProduct = () => {
 }
 
 export const exampleOrder = () => {
-    return new Order(Math.floor(Math.random()*100000).toString(), "Some Customer", "Some Address", "Pending");
+    return new Order(Math.floor(Math.random()*100000).toString(), "Some Customer", {streetAddress:"Fake Street",city:"",state:"",country:"",zipCode:""}, "Pending");
 }
 
 export const exampleCartItem = () => {

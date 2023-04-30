@@ -47,45 +47,46 @@ export const ProductPage: FC<ProductPageProps> = ({ setAppBarTitle, allProducts 
     const product = allProducts.find((someProduct) => someProduct.id == productId) || exampleProduct();
     setAppBarTitle("Product Details");
 
-    const handleAddToCart = async (productId: string, quantity: number)=>{
+    const handleAddToCart = async (productId: string, quantity: number) => {
         await AddToCart(productId, quantity);
     }
 
     return (
         <div>
+            <br />
             {/* <EcommerceAppBar appBarTitle='Product Page' /> */}
             <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
+                <Grid item xs={6} md={3}></Grid>
+                <Grid item xs={6} md={3}>
+                    
                     <Card>
-                        <CardMedia
-                            image={product.image}
-                            title={product.name}
-                        />
-                        <CardContent>
-                            <Typography variant="h4" component="h2">
-                                {product.name}
-                            </Typography>
-                        </CardContent>
+                    <img 
+                        src={product.image}
+                        style={{width: '100%'}}
+                    />
                     </Card>
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid item xs={6} md={3} >
                     <Card>
                         <CardContent>
-                            <Typography gutterBottom variant="h4" component="h2">
+                            <Typography gutterBottom variant="h3" style={{fontWeight:600}}>
                                 {product.name}
                             </Typography>
                             <Typography variant="body1" color="textSecondary" component="p">
                                 {product.description}
-                            </Typography>
-                            <Typography variant="h5" component="h3">
-                                Price: ${product.price.toString()}
-                            </Typography>
+                            </Typography><br/>
+                            <Typography  color="red" variant="h4"  style={{fontWeight:600}}>
+                                ${product.price.toString()}.00
+                            </Typography><br/>
+                            <Typography  variant="h5" style={{fontWeight:300}} color="textSecondary">
+                                Qty: {product.stock}
+                            </Typography><br/>
                             <Button
                                 variant="contained"
                                 color="primary"
                                 startIcon={<AddShoppingCartIcon />}
                                 //name, category, description, price, stock, image
-                                onClick={()=>handleAddToCart(product.id, 1)}
+                                onClick={() => handleAddToCart(product.id, 1)}
                             >
                                 Add to cart
                             </Button>

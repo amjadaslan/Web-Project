@@ -151,7 +151,7 @@ app.get('/api/user/:userId/username', function (req: RequestWithUserInfo, res) {
 
 app.post('/api/user/logout', function (req: RequestWithUserInfo, res) {
   try {
-    res.clearCookie('token');
+    res.cookies.set('token', {expires: Date.now()});
   } catch (err) {
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end();

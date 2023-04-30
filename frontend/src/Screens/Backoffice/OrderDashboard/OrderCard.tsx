@@ -28,7 +28,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
                             {`ID: ${order.id}`}
                         </Typography>
                         {secondaryTypography(`Customer: ${order.customerName}`)}
-                        {secondaryTypography(`Address: ${order.address}`)}
+                        {secondaryTypography(`Address: ${order.address.streetAddress}, ${order.address.city}, ${order.address.country}`)}
                         {secondaryTypography(`Status: ${order.status}`)}
                     </CardContent>
                     <CardActions>
