@@ -30,7 +30,7 @@ export const Catalog: FC<CatalogProps> = ({ setAppBarTitle, allProducts }) => {
 
   return (
     <div>
-      <div>
+      <div><br/>
         <Grid container spacing={3}>
           {allProducts.map((product) => (
             <Grid item xs={3} key={Math.random() as React.Key}>
@@ -38,11 +38,14 @@ export const Catalog: FC<CatalogProps> = ({ setAppBarTitle, allProducts }) => {
                 <CardMedia
                   image={product.image}
                   title={product.name}
-                  style={{ height: '150px' }}
+                  style={{ height: '400px' }}
                 />
                 <CardContent>
                   <Typography variant="h5" component="h2">
-                    {product.name}  |  {product.price}$ | Stock: {product.stock}
+                    {product.name}
+                  </Typography>
+                  <Typography color="red" component="h4" style={{fontWeight:600}}>
+                  ${product.price}.00
                   </Typography>
                   <Typography gutterBottom variant="body2" color="textSecondary" component="p">
                     {product.category}
