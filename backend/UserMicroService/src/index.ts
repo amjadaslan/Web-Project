@@ -108,7 +108,7 @@ app.use(async (req: RequestWithUserInfo, res, next) => {
   //Protected route is not relevant for login/signup/forgot_password requests, as no token exists.
   console.log(req.url.slice(-6));
   console.log(req.url.slice(-8));
-  if(req.url.slice(-6)=="answer" || req.url.slice(-8)=="question"){
+  if (req.url.slice(-6) == "answer" || req.url.slice(-8) == "question") {
     next();
     return;
   }
@@ -149,8 +149,9 @@ app.get('/api/user/:userId/permission', function (req: RequestWithUserInfo, res)
 app.get('/api/user/:userId/username', function (req: RequestWithUserInfo, res) { getUsername(req, res, req.params.userId); });
 
 app.post('/api/user/logout', function (req: RequestWithUserInfo, res) {
+  console.log("Logging out..");
   try {
-    res.clearCookie('token', {expires: new Date(1), path: '/' });
+    res.clearCookie('token', { expires: new Date(1), path: '/' });
     // res.cookie('token', 'fakeToken', {
     //   httpOnly: true,
     //   sameSite: 'none',
