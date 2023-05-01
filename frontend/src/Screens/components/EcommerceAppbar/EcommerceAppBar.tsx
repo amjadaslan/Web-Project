@@ -61,7 +61,7 @@ export const EcommerceAppBar: React.FC<EcommerceAppBarProps> = ({ userInfo, appB
             <IconButton color="inherit" onClick={() => { navigate('/cart') }}>
                 <ShoppingCartIcon />
             </IconButton>
-            <IconButton color="inherit" onClick={SendLogoutRequest}>
+            <IconButton color="inherit" onClick={async ()=>{await SendLogoutRequest(); navigate('/signin')}}>
                 <Logout />
             </IconButton>
         </Toolbar>
