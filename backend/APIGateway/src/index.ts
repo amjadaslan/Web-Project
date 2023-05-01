@@ -69,19 +69,6 @@ const connect = async (serviceType: string, serviceURL: string) => {
   });
 }
 
-apiGateway.post('/api/user/logout', function (req, res) {
-  console.log("Logging out..");
-  try {
-    res.clearCookie('token', { expires: new Date(1), path: '/' });
-    console.log("Logged Out Successfully!")
-  } catch (err) {
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end();
-    return;
-  }
-});
-
-
 //Call to UserMicroService
 connect('user', userServiceURL);
 

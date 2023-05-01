@@ -152,11 +152,8 @@ app.post('/api/user/logout', function (req: RequestWithUserInfo, res) {
   console.log("Logging out..");
   try {
     res.clearCookie('token', { expires: new Date(1), path: '/' });
-    // res.cookie('token', 'fakeToken', {
-    //   httpOnly: true,
-    //   sameSite: 'none',
-    //   secure: true,
-    // });
+    res.end();
+    return;
   } catch (err) {
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end();
